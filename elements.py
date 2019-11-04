@@ -72,6 +72,45 @@ class Listbox(tk.Frame):
 
 
 
+class TickSelect(tk.Frame):
+    '''
+    User sets ticks to select items from selections group and
+    presses ok -> callback_on_ok gets called as the made selections list
+    as the only input argument.
+    '''
+
+    def __init__(self, parent, selections, callback_on_ok):
+        '''
+        selections          List of strings
+        callback_on_ok      Callable, whom a sublist of selections is passed
+        '''
+        tk.Frame.__init__(self, parent)
+        
+        self.selections = selections
+
+        N_selections = len(self.selections)
+        tk_variables = [tk.IntVar() for i in range(N_selections)]
+
+        for i_row, selection in enumerate(self.selections):        
+            tk.Checkbutton(self, text=selection, variable=tk_variables[i_row]).grid(sticky='W')
+
+        tk.Button(self, text='Ok', command=self.on_ok).grid()
+
+    def on_ok(self):
+        '''
+        Gets called when the OK button is pressed, and calls callback_on_ok with
+        the made selections.
+        '''
+        made_selections = []
+
+        for tk_variable, selection in zip(tk_variables, self.selections):
+            if tk_variable.get() == 1:
+                made_selections.append(selection)
+
+        callback_on_ok(made_selections)
+
+
+
 class Tabs(tk.Frame):
     '''
     Tabs widget. Can contain any tkinter widgets.
