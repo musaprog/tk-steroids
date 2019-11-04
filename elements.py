@@ -1,7 +1,7 @@
 import copy 
 
 import tkinter as tk
-
+import tkinter.scrolledtext
 
 class Listbox(tk.Frame):
     '''
@@ -44,6 +44,8 @@ class Listbox(tk.Frame):
         
         # Make the listbox to stretch in North-South to take all the available space
         self.rowconfigure(0, weight=1)
+        #parent.rowconfigure(2, weight=1)
+
 
     def _errorchecked(self, callback):
         '''
@@ -71,7 +73,9 @@ class Listbox(tk.Frame):
 
 
 class Tabs(tk.Frame):
-
+    '''
+    Tabs widget. Can contain any tkinter widgets.
+    '''
     def __init__(self, parent, tab_names, elements):
         '''
         
@@ -113,6 +117,79 @@ class Tabs(tk.Frame):
         Returns the initialized elements which have to the Tab as their master/parent.
         '''
         return self.initialized_elements
+
+
+class ButtonsFrame(tk.Frame):
+    '''
+    If you just need a frame with simply buttons (with a callback) next to each other,
+    use this widget.
+    '''
+
+    def __init__(self, parent, button_names, button_commands):
+        '''
+        '''
+        tk.Frame.__init__(self, parent)
+        self.parent = parent
+        
+        self.buttons = []
+
+        for i_button, (name, command) in enumerate(zip(button_names, button_commands)):
+            button = tk.Button(self, text=name, command=command)
+            button.grid(row=0, column=i_button)
+            self.buttons.append(button)
+
+
+    def get_buttons(self):
+        '''
+        Returns the initialized buttons in the order that the buttons_kwargs
+        were delivered in the ButtonsFrame constructor.
+        '''
+        return self.buttons
+
+
+
+class BufferShower(tk.Frame):
+    '''
+    Redirect any string buffer to be printed on this buffer reader.
+    Bit like a non-interactive console window.
+    '''
+    def __init__(self, parent, string_buffer, max_entries=100):
+        '''
+        string_buffer       Like StringIO, or sys.stdout
+        '''
+        tk.Frame.__init__(self, parent)
+
+        self.parent = parent    
+        self.string_buffer = string_buffer
+        self.max_entries = max_entries
+        
+        self.entries = 0
+        self.offset = 0
+
+        self.text = tkinter.scrolledtext.ScrolledText(self)
+        self.text.grid()
+        
+        self.parent.after(20, self.callback)
+        
+    def callback(self):
+        self.string_buffer.seek(self.offset)
+
+        for line in self.string_buffer:
+
+            if self.entries > self.max_entries:
+                self.text.delete('1.0','2.0')
+
+            self.text.insert(tk.END, line)
+            self.text.yview(tk.END)
+            self.entries += 1
+        
+        self.offset = self.string_buffer.tell()
+
+        self.parent.after(20, self.callback)
+    
+
+
+
 
 
 def main():
