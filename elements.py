@@ -79,22 +79,49 @@ class TickSelect(tk.Frame):
     as the only input argument.
     '''
 
-    def __init__(self, parent, selections, callback_on_ok):
+    def __init__(self, parent, selections, callback_on_ok, close_on_ok=True):
         '''
         selections          List of strings
         callback_on_ok      Callable, whom a sublist of selections is passed
+        close_on_ok         Call root.destroy() when pressing ok
         '''
         tk.Frame.__init__(self, parent)
         
+        self.callback_on_ok = callback_on_ok
         self.selections = selections
+        self.close_on_ok = close_on_ok
 
+        # Add scrollbar - adds canvas and extra frame
+        canvas = tk.Canvas(self)
+        frame = tk.Frame(canvas)
+        
+        scrollbar = tk.Scrollbar(self, orient='vertical', command=canvas.yview)
+        scrollbar.grid(row=0, column=1, sticky='NS')
+        
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.create_window((0,0), window=frame, anchor='nw')
+        
+        canvas.grid(row=0, column=0)
+        
+        # Create tickboxes and entries
         N_selections = len(self.selections)
         tk_variables = [tk.IntVar() for i in range(N_selections)]
 
         for i_row, selection in enumerate(self.selections):        
-            tk.Checkbutton(self, text=selection, variable=tk_variables[i_row]).grid(sticky='W')
+            tk.Checkbutton(frame, text=selection, variable=tk_variables[i_row]).grid(sticky='W')
 
-        tk.Button(self, text='Ok', command=self.on_ok).grid()
+        tk.Button(self, text='Ok', command=self.on_ok).grid(row=1, column=0)
+        self.winfo_toplevel().after(50, self._update)
+        
+        self.frame = frame
+        self.canvas = canvas
+        self.tk_variables = tk_variables
+
+
+    def _update(self):
+        self.canvas.config(scrollregion=(0, 0, self.frame.winfo_reqwidth(), self.frame.winfo_reqheight()))
+        self.winfo_toplevel().after(1000, self._update)
+
 
     def on_ok(self):
         '''
@@ -103,12 +130,14 @@ class TickSelect(tk.Frame):
         '''
         made_selections = []
 
-        for tk_variable, selection in zip(tk_variables, self.selections):
+        for tk_variable, selection in zip(self.tk_variables, self.selections):
             if tk_variable.get() == 1:
                 made_selections.append(selection)
 
-        callback_on_ok(made_selections)
-
+        self.callback_on_ok(made_selections)
+        
+        if self.close_on_ok:
+            self.winfo_toplevel().destroy()
 
 
 class Tabs(tk.Frame):
