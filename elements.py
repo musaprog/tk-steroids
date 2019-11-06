@@ -193,16 +193,22 @@ class ButtonsFrame(tk.Frame):
     use this widget.
     '''
 
-    def __init__(self, parent, button_names, button_commands):
+    def __init__(self, parent, button_names, button_commands, title=''):
         '''
         '''
         tk.Frame.__init__(self, parent)
         self.parent = parent
         
+        if title:
+            target = tk.LabelFrame(self, text=title)
+            target.grid()
+        else:
+            target = self
+
         self.buttons = []
 
         for i_button, (name, command) in enumerate(zip(button_names, button_commands)):
-            button = tk.Button(self, text=name, command=command)
+            button = tk.Button(target, text=name, command=command)
             button.grid(row=0, column=i_button)
             self.buttons.append(button)
 
