@@ -73,6 +73,16 @@ class CanvasPlotter(tk.Frame):
         '''
         self.canvas.draw()
 
+    def update_size(self):
+        '''
+        Sets the frame size to match the matplotlib.Figure size.
+        '''
+        #self.canvas.config(width=800, height=400)
+        w, h = self.figure.get_size_inches() * self.figure.dpi
+        self.canvas.get_tk_widget().config(width=h, height=w)
+
+        self.canvas.get_tk_widget().grid(row=1, column=0)
+
     def toggle_visibility(self):
         '''
         Toggle wheter the plot is shown or hidden.

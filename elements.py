@@ -171,7 +171,7 @@ class Tabs(tk.Frame):
             self.buttons.append(button)
             
 
-        self.initialized_elements[self.current].grid(row=1, columnspan=len(self.buttons))
+        self.initialized_elements[self.current].grid(row=1, columnspan=len(self.buttons), sticky='NEWS')
 
     def button_pressed(self, i_button):
         print(i_button) 
