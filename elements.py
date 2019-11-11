@@ -71,6 +71,14 @@ class Listbox(tk.Frame):
             self.listbox.insert(tk.END, item)
 
 
+    def disable(self):
+        self.listbox.configure(state=tk.DISABLED)
+
+
+    def enable(self):
+        self.listbox.configure(state=tk.NORMAL)
+
+
 
 class TickSelect(tk.Frame):
     '''
