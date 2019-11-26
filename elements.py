@@ -29,8 +29,8 @@ class Listbox(tk.Frame):
         self.parent = parent
         
 
-        self.listbox = tk.Listbox(self)
-        self.listbox.grid(sticky='NS')
+        self.listbox = tk.Listbox(self, height=20)
+        self.listbox.grid(sticky='NSEW')
        
         self.scrollbar= tk.Scrollbar(self, orient='vertical', command=self.listbox.yview)
         self.scrollbar.grid(row=0, column=1, sticky='NS')
@@ -44,6 +44,8 @@ class Listbox(tk.Frame):
         
         # Make the listbox to stretch in North-South to take all the available space
         self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+
 
 
     def _errorchecked(self, callback):
@@ -174,6 +176,10 @@ class Tabs(tk.Frame):
         self.buttons = []
         self.initialized_elements = []
 
+
+        buttons_frame = tk.Frame(self)
+        buttons_frame.grid()
+
         # Initialize content/elements
         for i_button, (name, element) in enumerate(zip(tab_names, elements)):
 
@@ -181,12 +187,15 @@ class Tabs(tk.Frame):
             self.initialized_elements.append(initialized_element)
             
 
-            button = tk.Button(self, text=name, command=lambda i_button=i_button: self.button_pressed(i_button))
-            button.grid(row=0, column = i_button)
+            button = tk.Button(buttons_frame, text=name, command=lambda i_button=i_button: self.button_pressed(i_button))
+            button.grid(row=0, column = i_button, sticky='N')
             self.buttons.append(button)
             
 
-        self.initialized_elements[self.current].grid(row=1, columnspan=len(self.buttons), sticky='NEWS')
+        self.initialized_elements[self.current].grid(row=1, columnspan=len(self.buttons), sticky='NSEW')
+        
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
     def button_pressed(self, i_button):
         print(i_button) 

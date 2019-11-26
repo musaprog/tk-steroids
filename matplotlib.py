@@ -22,7 +22,14 @@ class CanvasPlotter(tk.Frame):
         self.ax = self.figure.add_subplot(111)
         
         self.frame = tk.LabelFrame(self, text=text)
-        self.frame.grid()
+        self.frame.grid(sticky='NSWE')
+        
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.frame.grid_rowconfigure(1, weight=1)
+        self.frame.grid_columnconfigure(0, weight=1)
+
+
 
         self.visibility_button = tk.Button(self.frame, text='', command=self.toggle_visibility)
         
@@ -30,6 +37,7 @@ class CanvasPlotter(tk.Frame):
             self.visibility_button.grid(row=0, column=0, sticky='W')
 
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.frame)
+        #self.canvas.get_tk_widget().grid(sticky='NEWS') 
         self.canvas.draw()
         self.show()
 
@@ -62,7 +70,7 @@ class CanvasPlotter(tk.Frame):
         Show the cavas widget.
         (Not to be confused with matplotlib's show)
         '''
-        self.canvas.get_tk_widget().grid(row=1, column=0)
+        self.canvas.get_tk_widget().grid(row=1, column=0, sticky='NSWE')
         self.visible = True
         self.visibility_button.config(text='Hide')
     
@@ -81,7 +89,7 @@ class CanvasPlotter(tk.Frame):
         w, h = self.figure.get_size_inches() * self.figure.dpi
         self.canvas.get_tk_widget().config(width=h, height=w)
 
-        self.canvas.get_tk_widget().grid(row=1, column=0)
+        self.canvas.get_tk_widget().grid(row=1, column=0, sticky='NSWE')
 
     def toggle_visibility(self):
         '''
