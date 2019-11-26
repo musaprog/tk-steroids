@@ -44,7 +44,6 @@ class Listbox(tk.Frame):
         
         # Make the listbox to stretch in North-South to take all the available space
         self.rowconfigure(0, weight=1)
-        #parent.rowconfigure(2, weight=1)
 
 
     def _errorchecked(self, callback):
@@ -278,8 +277,19 @@ class BufferShower(tk.Frame):
         self.parent.after(20, self.callback)
     
 
+class ColorExplanation(tk.Frame):
+    '''
+    If colors were used in the GUI, this widget can be used easily to
+    create help texts to explain meaning of the colors.
+    '''
 
+    def __init__(self, parent, colors, help_strings):
+        tk.Frame.__init__(self, parent)
 
+        for i_row, (color, string) in enumerate(zip(colors, help_strings)):
+            tk.Canvas(self, width=30, height=15, bg=color).grid(row=i_row, column=0, sticky='W')
+            tk.Label(self, text=string, font=('System', 8)).grid(row=i_row, column=1, sticky='W')
+        
 
 
 def main():
