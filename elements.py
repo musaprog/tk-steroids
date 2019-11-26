@@ -60,15 +60,23 @@ class Listbox(tk.Frame):
         if not argument is None:
             callback(self.selections[sel])
 
-    def set_selections(self, selections):
+    def set_selections(self, selections, colors=None):
+        '''
+        Allows resetting the selections.
+
+        colors          A list of valid tkinter colors, one for each selection
+        '''
         
         # Empty current as it may have old entries
         self.listbox.delete(0, tk.END)
         
         self.selections = selections
         
-        for item in self.selections:
+        for i_item, item in enumerate(self.selections):
             self.listbox.insert(tk.END, item)
+            
+            if colors:
+                self.listbox.itemconfig(i_item, bg=colors[i_item])
 
 
     def disable(self):
