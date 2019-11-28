@@ -2,15 +2,19 @@
 Connecting matplotlib to plot on tkinter canvases.
 '''
 
+import numpy as np
+
 import tkinter as tk
+import matplotlib.widgets
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class CanvasPlotter(tk.Frame):
     '''
-    Creates a tkinter canvas etc. for plotting in GUI.
+    Embedding a matplotlib figure on a tkinter GUI.
     '''
-    def __init__(self, parent, text='', show=True, visibility_button=True):
+    
+    def __init__(self, parent, text='', show=True, visibility_button=False):
         '''
         tk_canvas_master        Tkinter widget to be the master of the created canvas
 
@@ -49,11 +53,73 @@ class CanvasPlotter(tk.Frame):
         return self.figure, self.ax
 
     def plot(self, data):
-        
+        '''
+        For very simple plotting.
+        '''
         self.ax.clear()
         self.ax.plot(data)
         
         self.canvas.draw()
+    
+    def imshow(self, image, slider=False, **kwargs):
+        '''
+        Showing an image on the canvas, and optional sliders for colour adjustments.
+        
+        Redrawing image afterwards is quite fast because set_data is used
+        instead imshow (matplotlib).
+
+        INPUT ARGUMENTS
+        slider      Whether to draw the sliders for setting image cap values
+        *kwargs     go to imshow
+
+        Returns the object returned by matplotlib's axes.imshow.
+        '''
+        
+        if image is None:
+            image = self.imshow_image
+
+        self.imshow_image = image
+        
+        # Slider
+        if slider:
+            # Check if the sliders exist. If not, create
+            try:
+                self.imshow_sliders
+            except AttributeError:
+                self.slider_axes = [self.figure.add_axes(rect) for rect in ([0.2, 0.05, 0.6, 0.05], [0.2, 0, 0.6, 0.05])]
+                
+                self.imshow_sliders = []
+                self.imshow_sliders.append( matplotlib.widgets.Slider(self.slider_axes[0], 'Upper %', 0, 100, valinit=90, valstep=1) )
+                self.imshow_sliders.append( matplotlib.widgets.Slider(self.slider_axes[1], 'Lower %', 0, 100, valinit=5, valstep=1) )
+                for slider in self.imshow_sliders:
+                    slider.on_changed(lambda slider_val: self.imshow(None, slider=slider, **kwargs))
+            
+            # Check that the lower slider cannot go above the upper.
+            if self.imshow_sliders[0].val < self.imshow_sliders[1].val:
+                self.imshow_sliders[0].val = self.imshow_sliders[1].val
+
+            upper_clip = np.percentile(image, self.imshow_sliders[0].val)
+            lower_clip = np.percentile(image, self.imshow_sliders[1].val)
+            image = np.clip(image, lower_clip, upper_clip)
+            
+            # Normalize using the known clipping values
+            #image = image - lower_clip
+            #image = image / upper_clip
+        #else:
+        # No slider, just normalize from 0 to 1
+        image = image - np.min(image)
+        image = image / np.max(image)
+
+
+        # Just set the data or make an imshow plot
+        try:
+            self.imshow_obj.set_data(image)
+        except AttributeError:
+            self.imshow_obj = self.ax.imshow(image, **kwargs)
+        
+        self.canvas.draw()
+        
+        return self.imshow_obj
     
 
     def hide(self):
