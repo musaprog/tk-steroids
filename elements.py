@@ -103,6 +103,9 @@ class TickSelect(tk.Frame):
         close_on_ok         Call root.destroy() when pressing ok
         '''
         tk.Frame.__init__(self, parent)
+
+        self.grid_rowconfigure(0, weight=1) 
+        self.grid_columnconfigure(0, weight=1) 
         
         self.callback_on_ok = callback_on_ok
         self.selections = selections
@@ -111,15 +114,18 @@ class TickSelect(tk.Frame):
         # Add scrollbar - adds canvas and extra frame
         canvas = tk.Canvas(self)
         frame = tk.Frame(canvas)
-        
+        frame.grid(row=0, column=0, sticky='NSEW')
+
         scrollbar = tk.Scrollbar(self, orient='vertical', command=canvas.yview)
         scrollbar.grid(row=0, column=1, sticky='NS')
         
         canvas.configure(yscrollcommand=scrollbar.set)
         canvas.create_window((0,0), window=frame, anchor='nw')
         
+        canvas.grid_rowconfigure(0, weight=1)
         canvas.grid(row=0, column=0)
         
+
         # Create tickboxes and entries
         N_selections = len(self.selections)
         tk_variables = [tk.IntVar() for i in range(N_selections)]
