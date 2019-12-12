@@ -96,11 +96,12 @@ class TickSelect(tk.Frame):
     as the only input argument.
     '''
 
-    def __init__(self, parent, selections, callback_on_ok, close_on_ok=True):
+    def __init__(self, parent, selections, callback_on_ok, close_on_ok=True, ticked=None):
         '''
         selections          List of strings
         callback_on_ok      Callable, whom a sublist of selections is passed
         close_on_ok         Call root.destroy() when pressing ok
+        ticked              A sublist of selections that should be enabled by default.
         '''
         tk.Frame.__init__(self, parent)
 
@@ -131,7 +132,12 @@ class TickSelect(tk.Frame):
         tk_variables = [tk.IntVar() for i in range(N_selections)]
 
         for i_row, selection in enumerate(self.selections):        
-            tk.Checkbutton(frame, text=selection, variable=tk_variables[i_row]).grid(sticky='W')
+            checkbutton = tk.Checkbutton(frame, text=selection, variable=tk_variables[i_row])
+            checkbutton.grid(sticky='W')
+            
+            # Set ticked
+            if not ticked is None and selection in ticked:
+                checkbutton.select()
 
         tk.Button(self, text='Ok', command=self.on_ok).grid(row=1, column=0)
         self.winfo_toplevel().after(50, self._update)
