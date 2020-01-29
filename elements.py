@@ -20,7 +20,8 @@ class Listbox(tk.Frame):
         
         CALLBACK
         Set the callback function that is called when any change or selection
-        in the listbox happens.
+        in the listbox happens. The only argument that the callback function gets
+        is the selection (as shown) or None if no selection or error happens.
 
         The current selection is passed as the one and only argument to the callback function.
         '''
@@ -50,7 +51,7 @@ class Listbox(tk.Frame):
 
     def _errorchecked(self, callback):
         '''
-        
+        Does some error checking related to the selection(?)        
         '''
         try:
             sel = self.listbox.curselection()[0]
