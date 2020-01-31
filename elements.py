@@ -88,7 +88,13 @@ class Listbox(tk.Frame):
     def enable(self):
         self.listbox.configure(state=tk.NORMAL)
 
-
+    
+    def get_current(self):
+        try:
+            sel = self.listbox.curselection()[0]
+            return self.selections[sel]
+        except:
+            return None
 
 class TickSelect(tk.Frame):
     '''
