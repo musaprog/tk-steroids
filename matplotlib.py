@@ -8,6 +8,8 @@ import tkinter as tk
 import matplotlib.widgets
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.widgets import RectangleSelector
+import matplotlib.ticker
 
 class CanvasPlotter(tk.Frame):
     '''
@@ -45,6 +47,8 @@ class CanvasPlotter(tk.Frame):
         self.canvas.draw()
         self.show()
 
+        self.roi_callback = None
+
     def get_figax(self):
         '''
         Returns the figure and ax so that plotting can be done externally.
@@ -52,16 +56,22 @@ class CanvasPlotter(tk.Frame):
         '''
         return self.figure, self.ax
 
-    def plot(self, data):
+    def plot(self, *args, ax_clear=True, **kwargs):
         '''
         For very simple plotting.
         '''
-        self.ax.clear()
-        self.ax.plot(data)
+        if ax_clear:
+            self.ax.clear()
+        self.ax.plot(*args, **kwargs)
         
         self.canvas.draw()
-    
-    def imshow(self, image, slider=False, **kwargs):
+ 
+    def __onSelectRectangle(self, eclick, erelease):
+        x1, y1 = eclick.xdata, eclick.ydata
+        x2, y2 = erelease.xdata, erelease.ydata
+        self.roi_callback(x1, y1, x2, y2)
+       
+    def imshow(self, image, slider=False, roi_callback=None, normalize=True, **kwargs):
         '''
         Showing an image on the canvas, and optional sliders for colour adjustments.
         
@@ -69,12 +79,13 @@ class CanvasPlotter(tk.Frame):
         instead imshow (matplotlib).
 
         INPUT ARGUMENTS
-        slider      Whether to draw the sliders for setting image cap values
+        slider          Whether to draw the sliders for setting image cap values
+        roi_callback    A callable taking in x1,y1,x2,y2
         *kwargs     go to imshow
 
         Returns the object returned by matplotlib's axes.imshow.
         '''
-        
+
         if image is None:
             image = self.imshow_image
 
@@ -107,8 +118,9 @@ class CanvasPlotter(tk.Frame):
             #image = image / upper_clip
         #else:
         # No slider, just normalize from 0 to 1
-        image = image - np.min(image)
-        image = image / np.max(image)
+        if normalize:
+            image = image - np.min(image)
+            image = image / np.max(image)
 
 
         # Just set the data or make an imshow plot
@@ -116,7 +128,16 @@ class CanvasPlotter(tk.Frame):
             self.imshow_obj.set_data(image)
         except AttributeError:
             self.imshow_obj = self.ax.imshow(image, **kwargs)
-        
+            self.figure.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
+            self.ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator()) 
+            self.ax.yaxis.set_major_locator(matplotlib.ticker.NullLocator())
+            if callable(roi_callback):
+
+                if self.roi_callback is None:
+                    self.roi_rectangle = RectangleSelector(self.ax, self.__onSelectRectangle, useblit=True)
+                
+                self.roi_callback = roi_callback
+             
         self.canvas.draw()
         
         return self.imshow_obj
