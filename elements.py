@@ -103,12 +103,15 @@ class TickSelect(tk.Frame):
     as the only input argument.
     '''
 
-    def __init__(self, parent, selections, callback_on_ok, close_on_ok=True, ticked=None):
+    def __init__(self, parent, selections, callback_on_ok, close_on_ok=True, ticked=None,
+            callback_args=[], callback_kwargs={}):
         '''
         selections          List of strings
         callback_on_ok      Callable, whom a sublist of selections is passed
         close_on_ok         Call root.destroy() when pressing ok
         ticked              A sublist of selections that should be enabled by default.
+        callback_args       A list of secondary callback arguments, passed after the selections
+        callback_kwargs     A dict of callback keyword arguments
         '''
         tk.Frame.__init__(self, parent)
 
@@ -118,6 +121,9 @@ class TickSelect(tk.Frame):
         self.callback_on_ok = callback_on_ok
         self.selections = selections
         self.close_on_ok = close_on_ok
+
+        self.callback_args = callback_args
+        self.callback_kwargs = callback_kwargs
 
         # Add scrollbar - adds canvas and extra frame
         canvas = tk.Canvas(self)
@@ -170,8 +176,10 @@ class TickSelect(tk.Frame):
             if tk_variable.get() == 1:
                 made_selections.append(selection)
 
-        self.callback_on_ok(made_selections)
         
+        self.callback_on_ok(made_selections, *self.callback_args, **self.callback_kwargs)
+        
+
         if self.close_on_ok:
             self.winfo_toplevel().destroy()
 
