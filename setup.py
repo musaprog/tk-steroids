@@ -4,7 +4,6 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 install_requires = [
-        'tkinter',
         'PIL',
         'numpy',
         'matplotlib',
