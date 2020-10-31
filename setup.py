@@ -18,7 +18,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/jkemppainen/tk_steroids",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=('test')),
     install_requires=install_requires,
     classifiers=[
         "Programming Language :: Python :: 3",
