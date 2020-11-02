@@ -78,7 +78,7 @@ class MenuMaker:
                 
                 self.tkmenu.add_separator()
 
-                index = tkmenu.index(tk.END)
+                index = self.tkmenu.index(tk.END)
                 self.added_menu_items.append(index)
 
             else:
