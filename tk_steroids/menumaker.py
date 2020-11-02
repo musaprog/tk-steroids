@@ -120,7 +120,7 @@ class MenuMaker:
         By default, underscores are replaced by spaces and the name
         is capitalized.
         '''
-        fancyname = name.capitalize()
+        fancyname = name[0].upper() + name[1:]
 
         for original, replacement in self.replacement_dict.items():
             fancyname = fancyname.replace(original, replacement)
