@@ -69,8 +69,17 @@ class MenuMaker:
 
         method_names = self._force_order()
         
+        all_method_names = self._list_items(fancy_names=False)
+        
         if method_names is None:
-            method_names = self._list_items(fancy_names=False)
+            # In case self._force_order not overridden just use alphabetical
+            # listing of all method names
+            method_names = all_method_names
+        else:
+            # Make sure to add also those methods that were
+            # not speified in self._force_order
+            method_names += [name for name in all_method_names if name not in method_names]
+
 
         for method_name in method_names:
             
