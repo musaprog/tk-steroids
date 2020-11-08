@@ -187,9 +187,25 @@ class TickSelect(tk.Frame):
 class Tabs(tk.Frame):
     '''
     Tabs widget. Can contain any tkinter widgets.
+    
+    Attributes
+    ----------
+    self.i_current
+        Index of the currently selected tab (from 0 to N-1)
+    self.buttons
+        List of tk.Button instances 
+    self.initialized_elements
+        Tkinter widgets the tab holds
     '''
-    def __init__(self, parent, tab_names, elements):
+    def __init__(self, parent, tab_names, elements,
+            on_select_callback=None):
         '''
+
+        parent              Tkinter parent widget
+        tab_names           Human readable names
+        elements            Tkinter widget constructors
+        on_select_callback  Callback just before changing the view
+                                Has to take in one arguments, new i_current
         
         *sub_elements   Constructors of the elements that get to initialized,
                         only one argument allowed, the parent
@@ -198,7 +214,9 @@ class Tabs(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.parent = parent
 
-        self.current = 0
+        self.on_select_callback = on_select_callback
+
+        self.i_current = 0
 
         self.buttons = []
         self.initialized_elements = []
@@ -219,23 +237,36 @@ class Tabs(tk.Frame):
             self.buttons.append(button)
             
 
-        self.initialized_elements[self.current].grid(row=1, columnspan=len(self.buttons), sticky='NSEW')
+        self.initialized_elements[self.i_current].grid(row=1, columnspan=len(self.buttons), sticky='NSEW')
         
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
+
+
     def button_pressed(self, i_button):
-        print(i_button) 
-        self.initialized_elements[self.current].grid_remove()
-        self.current = i_button
+        '''
+        When button number i_button is pressed.
+        '''
+        self.on_select_callback(i_button)
+
+        # Remove the previously gridded widget
+        self.initialized_elements[self.i_current].grid_remove()
+
+        # Update the current widget
+        self.i_current = i_button
         
-        self.initialized_elements[self.current].grid(row=1, columnspan=len(self.buttons))
+        # Grid the new widget
+        self.initialized_elements[self.i_current].grid(row=1, columnspan=len(self.buttons))
+
+
 
     def get_elements(self):
         '''
         Returns the initialized elements which have to the Tab as their master/parent.
         '''
         return self.initialized_elements
+
 
 
 class ButtonsFrame(tk.Frame):

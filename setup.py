@@ -3,6 +3,9 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+# Version number to __version__ variable
+exec(open("tk_steroids/version.py").read())
+
 install_requires = [
         'Pillow',
         'numpy',
@@ -11,14 +14,14 @@ install_requires = [
 
 setuptools.setup(
     name="tk-steroids",
-    version="0.0.1",
+    version=__version__,
     author="Joni Kemppainen",
     author_email="jjtkemppainen1@sheffield.ac.uk",
     description="A collection of custom tkinter bits",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/jkemppainen/tk_steroids",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=('test')),
     install_requires=install_requires,
     classifiers=[
         "Programming Language :: Python :: 3",
