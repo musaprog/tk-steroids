@@ -194,16 +194,18 @@ class Tabs(tk.Frame):
         Index of the currently selected tab (from 0 to N-1)
     self.buttons
         List of tk.Button instances 
-    self.initialized_elements
-        Tkinter widgets the tab holds
+    self.pages
+        A list of Tkinter widgets the tab holds
     '''
-    def __init__(self, parent, tab_names, elements,
+    def __init__(self, parent, tab_names, elements=None,
             on_select_callback=None):
         '''
 
         parent              Tkinter parent widget
         tab_names           Human readable names
-        elements            Tkinter widget constructors
+        elements            Tkinter widget classes.
+                            If None, initialize tk.Frames as many as tab_names.
+                            You can get the initalized elements by
         on_select_callback  Callback just before changing the view
                                 Has to take in one arguments, new i_current
         
@@ -219,17 +221,20 @@ class Tabs(tk.Frame):
         self.i_current = 0
 
         self.buttons = []
-        self.initialized_elements = []
+        self.pages = []
 
 
         buttons_frame = tk.Frame(self)
         buttons_frame.grid()
 
+        if elements is None:
+            elements = [tk.Frame for i_tab in tab_names]
+
         # Initialize content/elements
         for i_button, (name, element) in enumerate(zip(tab_names, elements)):
 
             initialized_element = element(self)
-            self.initialized_elements.append(initialized_element)
+            self.pages.append(initialized_element)
             
 
             button = tk.Button(buttons_frame, text=name, command=lambda i_button=i_button: self.button_pressed(i_button))
@@ -237,7 +242,7 @@ class Tabs(tk.Frame):
             self.buttons.append(button)
             
 
-        self.initialized_elements[self.i_current].grid(row=1, columnspan=len(self.buttons), sticky='NSEW')
+        self.pages[self.i_current].grid(row=1, columnspan=len(self.buttons), sticky='NSEW')
         
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -251,13 +256,13 @@ class Tabs(tk.Frame):
         self.on_select_callback(i_button)
 
         # Remove the previously gridded widget
-        self.initialized_elements[self.i_current].grid_remove()
+        self.pages[self.i_current].grid_remove()
 
         # Update the current widget
         self.i_current = i_button
         
         # Grid the new widget
-        self.initialized_elements[self.i_current].grid(row=1, columnspan=len(self.buttons))
+        self.pages[self.i_current].grid(row=1, columnspan=len(self.buttons))
 
 
 
@@ -265,7 +270,7 @@ class Tabs(tk.Frame):
         '''
         Returns the initialized elements which have to the Tab as their master/parent.
         '''
-        return self.initialized_elements
+        return self.pages
 
 
 
