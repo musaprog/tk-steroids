@@ -253,7 +253,8 @@ class Tabs(tk.Frame):
         '''
         When button number i_button is pressed.
         '''
-        self.on_select_callback(i_button)
+        if self.on_select_callback is not None:
+            self.on_select_callback(i_button)
 
         # Remove the previously gridded widget
         self.pages[self.i_current].grid_remove()
