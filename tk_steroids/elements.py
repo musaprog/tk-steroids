@@ -246,7 +246,7 @@ class Tabs(tk.Frame):
             self.pages.append(initialized_element)
             
 
-            button = tk.Button(buttons_frame, text=name, command=lambda i_button=i_button: self.button_pressed(i_button))
+            button = tk.Button(buttons_frame, text=name, command=lambda i_button=i_button: self.set_page(i_button))
             button.grid(row=0, column = i_button, sticky='N')
             self.buttons.append(button)
             
@@ -257,20 +257,20 @@ class Tabs(tk.Frame):
         self.grid_columnconfigure(0, weight=1)
 
 
-
-    def button_pressed(self, i_button):
+    def set_page(self, i_page):
         '''
         When button number i_button is pressed.
         '''
+        # Update i_current and take i_old for now
+        i_old = self.i_current
+        self.i_current = i_page
+
         if self.on_select_callback is not None:
-            self.on_select_callback(i_button)
+            self.on_select_callback(self.i_current)
 
         # Remove the previously gridded widget
-        self.pages[self.i_current].grid_remove()
+        self.pages[i_old].grid_remove()
 
-        # Update the current widget
-        self.i_current = i_button
-        
         # Grid the new widget
         self.pages[self.i_current].grid(row=1, columnspan=len(self.buttons))
 
