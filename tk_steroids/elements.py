@@ -187,30 +187,39 @@ class TickSelect(tk.Frame):
 class Tabs(tk.Frame):
     '''
     Tabs widget. Can contain any tkinter widgets.
-    
+
     Attributes
     ----------
-    self.i_current
-        Index of the currently selected tab (from 0 to N-1)
-    self.buttons
-        List of tk.Button instances 
-    self.pages
-        A list of Tkinter widgets the tab holds
+    i_current : int
+        Index of the currently selected tab.
+    buttons : list of objects
+        List of tk.Button instances.
+    pages : list of objects
+        A list of Tkinter widgets the tab holds.
+    
     '''
     def __init__(self, parent, tab_names, elements=None,
             on_select_callback=None):
         '''
-
-        parent              Tkinter parent widget
-        tab_names           Human readable names
-        elements            Tkinter widget classes.
-                            If None, initialize tk.Frames as many as tab_names.
-                            You can get the initalized elements by
-        on_select_callback  Callback just before changing the view
-                                Has to take in one arguments, new i_current
+        Initializing the tabs.
         
-        *sub_elements   Constructors of the elements that get to initialized,
-                        only one argument allowed, the parent
+        Arguments
+        ---------
+        parent
+            Tkinter parent widget
+        tab_names
+            Human readable names, shown in the buttons
+        elements : None or list of classes
+            If None (by default), initializes tk.Frames as tabs.
+            You can get these tk.Frames are in pages attribute.
+
+            Can also classes, that get initialized as this Tabs class
+            as the sole argument.
+
+        on_select_callback : callable
+            Callback that is executed just before changing the tab.
+            Has to take in one argument that is new i_current (integer).
+        
         '''
 
         tk.Frame.__init__(self, parent)
@@ -264,7 +273,6 @@ class Tabs(tk.Frame):
         
         # Grid the new widget
         self.pages[self.i_current].grid(row=1, columnspan=len(self.buttons))
-
 
 
     def get_elements(self):
