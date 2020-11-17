@@ -187,28 +187,39 @@ class TickSelect(tk.Frame):
 class Tabs(tk.Frame):
     '''
     Tabs widget. Can contain any tkinter widgets.
-    
+
     Attributes
     ----------
-    self.i_current
-        Index of the currently selected tab (from 0 to N-1)
-    self.buttons
-        List of tk.Button instances 
-    self.initialized_elements
-        Tkinter widgets the tab holds
+    i_current : int
+        Index of the currently selected tab.
+    buttons : list of objects
+        List of tk.Button instances.
+    pages : list of objects
+        A list of Tkinter widgets the tab holds.
+    
     '''
-    def __init__(self, parent, tab_names, elements,
+    def __init__(self, parent, tab_names, elements=None,
             on_select_callback=None):
         '''
-
-        parent              Tkinter parent widget
-        tab_names           Human readable names
-        elements            Tkinter widget constructors
-        on_select_callback  Callback just before changing the view
-                                Has to take in one arguments, new i_current
+        Initializing the tabs.
         
-        *sub_elements   Constructors of the elements that get to initialized,
-                        only one argument allowed, the parent
+        Arguments
+        ---------
+        parent
+            Tkinter parent widget
+        tab_names
+            Human readable names, shown in the buttons
+        elements : None or list of classes
+            If None (by default), initializes tk.Frames as tabs.
+            You can get these tk.Frames are in pages attribute.
+
+            Can also classes, that get initialized as this Tabs class
+            as the sole argument.
+
+        on_select_callback : callable
+            Callback that is executed just before changing the tab.
+            Has to take in one argument that is new i_current (integer).
+        
         '''
 
         tk.Frame.__init__(self, parent)
@@ -219,53 +230,56 @@ class Tabs(tk.Frame):
         self.i_current = 0
 
         self.buttons = []
-        self.initialized_elements = []
+        self.pages = []
 
 
         buttons_frame = tk.Frame(self)
         buttons_frame.grid()
 
+        if elements is None:
+            elements = [tk.Frame for i_tab in tab_names]
+
         # Initialize content/elements
         for i_button, (name, element) in enumerate(zip(tab_names, elements)):
 
             initialized_element = element(self)
-            self.initialized_elements.append(initialized_element)
+            self.pages.append(initialized_element)
             
 
-            button = tk.Button(buttons_frame, text=name, command=lambda i_button=i_button: self.button_pressed(i_button))
+            button = tk.Button(buttons_frame, text=name, command=lambda i_button=i_button: self.set_page(i_button))
             button.grid(row=0, column = i_button, sticky='N')
             self.buttons.append(button)
             
 
-        self.initialized_elements[self.i_current].grid(row=1, columnspan=len(self.buttons), sticky='NSEW')
+        self.pages[self.i_current].grid(row=1, columnspan=len(self.buttons), sticky='NSEW')
         
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
 
-
-    def button_pressed(self, i_button):
+    def set_page(self, i_page):
         '''
         When button number i_button is pressed.
         '''
-        self.on_select_callback(i_button)
+        # Update i_current and take i_old for now
+        i_old = self.i_current
+        self.i_current = i_page
+
+        if self.on_select_callback is not None:
+            self.on_select_callback(self.i_current)
 
         # Remove the previously gridded widget
-        self.initialized_elements[self.i_current].grid_remove()
+        self.pages[i_old].grid_remove()
 
-        # Update the current widget
-        self.i_current = i_button
-        
         # Grid the new widget
-        self.initialized_elements[self.i_current].grid(row=1, columnspan=len(self.buttons))
-
+        self.pages[self.i_current].grid(row=1, columnspan=len(self.buttons))
 
 
     def get_elements(self):
         '''
         Returns the initialized elements which have to the Tab as their master/parent.
         '''
-        return self.initialized_elements
+        return self.pages
 
 
 
