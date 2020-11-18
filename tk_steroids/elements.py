@@ -96,6 +96,60 @@ class Listbox(tk.Frame):
 
 
 
+class TickboxFrame(tk.Frame):
+    '''
+    A series of tickboxes (Checkbuttons) and getting their True/False values.
+    
+    Attributes
+    ----------
+    states : dict
+        True/False
+    checkbuttons : list
+        tk.Checkbutton objects
+    '''
+
+    def __init__(self, parent, options, fancynames=None, defaults=None, ncols=3):
+        '''
+        parent
+            Tkinter parent widget
+        options : list of strings
+            Names of the options
+        fancynames : list of strings
+            Names to show on the gui
+        defaults : list of bools
+            Start values, True for ticked and False for unticked
+        ncols : int
+            Number of columns
+        '''
+         
+        tk.Frame.__init__(self, parent)
+        self.parent = parent
+        
+        self.__states = {option: tk.IntVar() for option in options}
+        
+        if defaults is not None:
+            for option, default in zip(options, defaults):
+                self.__states[option].set( int(default) ) 
+            
+
+        self.checkbuttons = [tk.Checkbutton(self, text=option, variable=self.__states[option]) for
+                option in options]
+        
+        i_row = 1
+        i_col = 1
+        for button in self.checkbuttons:
+            button.grid(row=i_row, column=i_col)
+            
+            i_col += 1
+            if i_col > ncols:
+                i_col = 1
+                i_row += 1
+    
+    @property
+    def states(self):
+        return {option: bool(intvar.get()) for option, intvar in self.__states.items()}
+
+
 class Tabs(tk.Frame):
     '''
     Tabs widget. Can contain any tkinter widgets.
@@ -282,7 +336,7 @@ class ColorExplanation(tk.Frame):
         for i_row, (color, string) in enumerate(zip(colors, help_strings)):
             tk.Canvas(self, width=30, height=15, bg=color).grid(row=i_row, column=0, sticky='W')
             tk.Label(self, text=string, font=('System', 8)).grid(row=i_row, column=1, sticky='W')
-        
+ 
 
 
 def main():
