@@ -108,7 +108,8 @@ class TickboxFrame(tk.Frame):
         tk.Checkbutton objects
     '''
 
-    def __init__(self, parent, options, fancynames=None, defaults=None, ncols=3):
+    def __init__(self, parent, options, fancynames=None, defaults=None, ncols=3,
+            callback=None):
         '''
         parent
             Tkinter parent widget
@@ -120,6 +121,9 @@ class TickboxFrame(tk.Frame):
             Start values, True for ticked and False for unticked
         ncols : int
             Number of columns
+        callback : callable
+            Executed when there's a change in the tickboxes.
+            Gets the self.states dict as an input argument.
         '''
          
         tk.Frame.__init__(self, parent)
@@ -132,7 +136,7 @@ class TickboxFrame(tk.Frame):
                 self.__states[option].set( int(default) ) 
             
 
-        self.checkbuttons = [tk.Checkbutton(self, text=option, variable=self.__states[option]) for
+        self.checkbuttons = [tk.Checkbutton(self, text=option, variable=self.__states[option], command=callback) for
                 option in options]
         
         i_row = 1
