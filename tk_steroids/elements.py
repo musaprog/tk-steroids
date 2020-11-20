@@ -238,7 +238,7 @@ class Tabs(tk.Frame):
         self.pages[i_old].grid_remove()
 
         # Grid the new widget
-        self.pages[self.i_current].grid(row=1, columnspan=len(self.buttons))
+        self.pages[self.i_current].grid(row=1, columnspan=len(self.buttons), sticky='NSEW')
 
 
     def get_elements(self):
