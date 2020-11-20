@@ -41,7 +41,7 @@ class TickSelect(tk.Frame):
         canvas.create_window((0,0), window=frame, anchor='nw')
         
         canvas.grid_rowconfigure(0, weight=1)
-        canvas.grid(row=0, column=0)
+        canvas.grid(row=0, column=0, sticky='NSEW')
         
 
         # Create tickboxes and entries
