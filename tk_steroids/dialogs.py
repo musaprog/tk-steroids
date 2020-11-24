@@ -1,5 +1,19 @@
 import tkinter as tk
 
+
+def popup_tickselect(tk_parent, *args, title='Make selection', **kwargs):
+    top = tk.Toplevel(tk_parent)
+    top.title(title)
+    top.grid_columnconfigure(0, weight=1)
+    top.grid_rowconfigure(1, weight=1)
+ 
+    selector = TickSelect(top, *args, **kwargs)
+    selector.grid(sticky='NSEW')
+
+    tk.Button(selector, text='Close', command=top.destroy).grid(row=1, column=1)
+
+
+
 class TickSelect(tk.Frame):
     '''
     User sets ticks to select items from selections group and
