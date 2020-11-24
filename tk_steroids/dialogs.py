@@ -22,7 +22,7 @@ class TickSelect(tk.Frame):
     '''
 
     def __init__(self, parent, selections, callback_on_ok, close_on_ok=True, ticked=None,
-            callback_args=[], callback_kwargs={}):
+            callback_args=[], callback_kwargs={}, single_select=False):
         '''
         selections          List of strings
         callback_on_ok      Callable, whom a sublist of selections is passed
@@ -30,6 +30,7 @@ class TickSelect(tk.Frame):
         ticked              A sublist of selections that should be enabled by default.
         callback_args       A list of secondary callback arguments, passed after the selections
         callback_kwargs     A dict of callback keyword arguments
+        single_select       Use Radiobuttons instead Checkbutton, allowing only one item to be selected.
         '''
         tk.Frame.__init__(self, parent)
 
@@ -59,11 +60,17 @@ class TickSelect(tk.Frame):
         
 
         # Create tickboxes and entries
-        N_selections = len(self.selections)
+        if single_select:
+            N_selections = 1
+        else:
+            N_selections = len(self.selections)
         tk_variables = [tk.IntVar() for i in range(N_selections)]
 
         for i_row, selection in enumerate(self.selections):        
-            checkbutton = tk.Checkbutton(frame, text=selection, variable=tk_variables[i_row])
+            if single_select:
+                checkbutton = tk.Radiobutton(frame, text=selection, variable=tk_variables[0], value=i_row)
+            else:
+                checkbutton = tk.Checkbutton(frame, text=selection, variable=tk_variables[i_row])
             checkbutton.grid(sticky='W')
             
             # Set ticked
@@ -76,7 +83,7 @@ class TickSelect(tk.Frame):
         self.frame = frame
         self.canvas = canvas
         self.tk_variables = tk_variables
-
+        self.single_select = single_select
 
     def _update(self):
         self.canvas.config(scrollregion=(0, 0, self.frame.winfo_reqwidth(), self.frame.winfo_reqheight()))
@@ -90,11 +97,13 @@ class TickSelect(tk.Frame):
         '''
         made_selections = []
 
-        for tk_variable, selection in zip(self.tk_variables, self.selections):
-            if tk_variable.get() == 1:
-                made_selections.append(selection)
+        if self.single_select:
+            made_selections.append(self.selections[self.tk_variables[0].get()])
+        else:
+            for tk_variable, selection in zip(self.tk_variables, self.selections):
+                if tk_variable.get() == 1:
+                    made_selections.append(selection)
 
-        
         self.callback_on_ok(made_selections, *self.callback_args, **self.callback_kwargs)
         
 
