@@ -10,22 +10,26 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.widgets import RectangleSelector
 import matplotlib.ticker
+from mpl_toolkits.mplot3d import proj3d
 
 class CanvasPlotter(tk.Frame):
     '''
     Embedding a matplotlib figure on a tkinter GUI.
     '''
     
-    def __init__(self, parent, text='', show=True, visibility_button=False):
+    def __init__(self, parent, text='', show=True, visibility_button=False,
+            projection=None):
         '''
         tk_canvas_master        Tkinter widget to be the master of the created canvas
 
+        projection : string
+            See projection keyword argument for matplotlib's Figure.add_subplot
         '''
         tk.Frame.__init__(self, parent)
         self.parent = parent
 
         self.figure = Figure()
-        self.ax = self.figure.add_subplot(111)
+        self.ax = self.figure.add_subplot(111, projection=projection)
         
         self.frame = tk.LabelFrame(self, text=text)
         self.frame.grid(sticky='NSWE')
