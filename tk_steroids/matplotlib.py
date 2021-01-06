@@ -18,7 +18,8 @@ class CanvasPlotter(tk.Frame):
     '''
     
     def __init__(self, parent, text='', show=True, visibility_button=False,
-            projection=None):
+            figsize=None,
+            **kwargs):
         '''
         tk_canvas_master        Tkinter widget to be the master of the created canvas
 
@@ -27,9 +28,12 @@ class CanvasPlotter(tk.Frame):
         '''
         tk.Frame.__init__(self, parent)
         self.parent = parent
-
-        self.figure = Figure()
-        self.ax = self.figure.add_subplot(111, projection=projection)
+        
+        if figsize:
+            self.figure = Figure(figsize=figsize)
+        else:
+            self.figure = Figure()
+        self.ax = self.figure.add_subplot(111, **kwargs)
         
         self.frame = tk.LabelFrame(self, text=text)
         self.frame.grid(sticky='NSWE')
