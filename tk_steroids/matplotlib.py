@@ -14,18 +14,39 @@ from mpl_toolkits.mplot3d import proj3d
 
 class CanvasPlotter(tk.Frame):
     '''
-    Embedding a matplotlib figure on a tkinter GUI.
+    Embeds a matplotlib figure on a tkinter GUI.
+
+    Attributes
+    ----------
+    self.figure : object
+        Matplotlib Figure object
+    self.ax : object
+        Matplotlib Axes object
+    self.parent : object
+        Tkinter parent widget
+    self.visibility_button : object
+        A tkinter.Buttton to toggle show/hide
     '''
     
     def __init__(self, parent, text='', show=True, visibility_button=False,
             figsize=None,
             **kwargs):
         '''
-        tk_canvas_master        Tkinter widget to be the master of the created canvas
+        Creates a matplotlib figure and an axes objects when created, and then a
+        FigureCanvasTkAgg
 
+        ARGUMENTS
+        ---------
+        parent : object
+            Tkinter parent widget
+        text : string
+            Title of the plot, to be shown in a Label Frame wrapping the plot
+        show : bool
+            
         projection : string
             See projection keyword argument for matplotlib's Figure.add_subplot
         '''
+
         tk.Frame.__init__(self, parent)
         self.parent = parent
         
@@ -66,9 +87,17 @@ class CanvasPlotter(tk.Frame):
         '''
         return self.figure, self.ax
 
+
     def plot(self, *args, ax_clear=True, **kwargs):
         '''
         For very simple plotting.
+
+        Arguments
+        ---------
+        *args, **kwargs
+            Directly passed to matplotlib plot method
+        ax_clear : bool
+            If True, clear the previous plottings away
         '''
         if ax_clear:
             self.ax.clear()
