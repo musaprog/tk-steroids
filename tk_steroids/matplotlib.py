@@ -115,6 +115,23 @@ class CanvasPlotter(tk.Frame):
                 for slider in self.imshow_sliders:
                     slider.on_changed(lambda slider_val: self.imshow(None, slider=slider, **kwargs))
             
+            for ax in self.slider_axes:
+                if ax.get_visible() == False:
+                    ax.set_visible(True)
+           
+           
+            # Normalize using the known clipping values
+            #image = image - lower_clip
+            #image = image / upper_clip
+        else:
+            # Hide the sliders if they exist
+            if getattr(self, 'imshow_sliders', None):
+                for ax in self.slider_axes:
+                    if ax.get_visible() == True:
+                        ax.set_visible(False)
+                        print('axes not visible not')
+
+        if getattr(self, 'imshow_sliders', None):
             # Check that the lower slider cannot go above the upper.
             if self.imshow_sliders[0].val < self.imshow_sliders[1].val:
                 self.imshow_sliders[0].val = self.imshow_sliders[1].val
