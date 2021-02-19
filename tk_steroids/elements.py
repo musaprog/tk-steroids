@@ -135,8 +135,12 @@ class TickboxFrame(tk.Frame):
             for option, default in zip(options, defaults):
                 self.__states[option].set( int(default) ) 
             
+        if fancynames is None:
+            fancynames = {option: option for option in options}
+        else:
+            fancynames = {option: fancyname for option, fancyname in zip(options, fancynames)}
 
-        self.checkbuttons = [tk.Checkbutton(self, text=option, variable=self.__states[option], command=callback) for
+        self.checkbuttons = [tk.Checkbutton(self, text=fancynames[option], variable=self.__states[option], command=callback) for
                 option in options]
         
         i_row = 1
