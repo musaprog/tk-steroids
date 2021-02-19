@@ -56,6 +56,8 @@ class CanvasPlotter(tk.Frame):
         self.show()
 
         self.roi_callback = None
+        self._previous_shape = None
+
 
     def get_figax(self):
         '''
@@ -120,21 +122,17 @@ class CanvasPlotter(tk.Frame):
             upper_clip = np.percentile(image, self.imshow_sliders[0].val)
             lower_clip = np.percentile(image, self.imshow_sliders[1].val)
             image = np.clip(image, lower_clip, upper_clip)
-            
-            # Normalize using the known clipping values
-            #image = image - lower_clip
-            #image = image / upper_clip
-        #else:
-        # No slider, just normalize from 0 to 1
+ 
+
         if normalize:
             image = image - np.min(image)
             image = image / np.max(image)
 
 
         # Just set the data or make an imshow plot
-        try:
+        if self._previous_shape == image.shape:
             self.imshow_obj.set_data(image)
-        except AttributeError:
+        else:
             self.imshow_obj = self.ax.imshow(image, **kwargs)
             self.figure.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
             self.ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator()) 
@@ -145,7 +143,8 @@ class CanvasPlotter(tk.Frame):
                     self.roi_rectangle = RectangleSelector(self.ax, self.__onSelectRectangle, useblit=True)
                 
                 self.roi_callback = roi_callback
-             
+        
+        self._previous_shape = image.shape
         self.canvas.draw()
         
         return self.imshow_obj
