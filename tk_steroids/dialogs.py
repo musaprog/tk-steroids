@@ -22,7 +22,7 @@ class TickSelect(tk.Frame):
     '''
 
     def __init__(self, parent, selections, callback_on_ok, close_on_ok=True, ticked=None,
-            callback_args=[], callback_kwargs={}, single_select=False):
+            callback_args=[], callback_kwargs={}, single_select=False, search=10):
         '''
         selections          List of strings
         callback_on_ok      Callable, whom a sublist of selections is passed
@@ -31,6 +31,9 @@ class TickSelect(tk.Frame):
         callback_args       A list of secondary callback arguments, passed after the selections
         callback_kwargs     A dict of callback keyword arguments
         single_select       Use Radiobuttons instead Checkbutton, allowing only one item to be selected.
+        search : int or bool
+            If True, show the seach bar, false hide. If integer, specifies the number
+            of selections when to start showing the search bar.
         '''
         tk.Frame.__init__(self, parent)
 
@@ -58,6 +61,7 @@ class TickSelect(tk.Frame):
         canvas.grid_rowconfigure(0, weight=1)
         canvas.grid(row=0, column=0, sticky='NSEW')
         
+        self.checkbuttons = []
 
         # Create tickboxes and entries
         if single_select:
@@ -77,13 +81,43 @@ class TickSelect(tk.Frame):
             if not ticked is None and selection in ticked:
                 checkbutton.select()
 
+            self.checkbuttons.append(checkbutton)
+
         tk.Button(self, text='Ok', command=self.on_ok).grid(row=1, column=0)
+        
+        if (search is True) or (search is not False and search < len(self.selections)):
+            self.last_search = ''
+            self.searchtext = tk.StringVar()
+            self.searchbox = tk.Entry(self, text='Search', textvariable=self.searchtext)
+            self.searchbox.grid(row=2, column=0, sticky='WE')
+            self.winfo_toplevel().after(2000, lambda: self._update_search(repeat_after=1000))
+
         self.winfo_toplevel().after(50, self._update)
         
         self.frame = frame
         self.canvas = canvas
         self.tk_variables = tk_variables
         self.single_select = single_select
+
+
+    def _update_search(self, repeat_after=None):
+        '''
+        Check the searchbox input and hide selections that do not match
+        the search.
+        '''
+        key = str(self.searchtext.get())
+        if key != self.last_search:
+            
+            for checkbutton in self.checkbuttons:
+                checkbutton.grid_remove()
+                if key in checkbutton.cget('text'):
+                    checkbutton.grid()
+
+            self.last_search = key
+
+        if repeat_after:
+            self.winfo_toplevel().after(repeat_after, lambda r=repeat_after: self._update_search(repeat_after=r))
+
 
     def _update(self):
         self.canvas.config(scrollregion=(0, 0, self.frame.winfo_reqwidth(), self.frame.winfo_reqheight()))
