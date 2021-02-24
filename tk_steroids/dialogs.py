@@ -82,9 +82,14 @@ class TickSelect(tk.Frame):
                 checkbutton.select()
 
             self.checkbuttons.append(checkbutton)
+    
+        # Buttons under the selections list
+        self.buttons_frame = tk.Frame(self)
+        tk.Button(self, text='Ok', command=self.on_ok).grid(row=1, column=1)
+        tk.Button(self.buttons_frame, text='Select all', command=self.select_all).grid(row=1, column=0)
+        tk.Button(self.buttons_frame, text='Inverse', command=self.toggle_selection).grid(row=1, column=1)
+        self.buttons_frame.grid(row=1, column=0)
 
-        tk.Button(self, text='Ok', command=self.on_ok).grid(row=1, column=0)
-        
         if (search is True) or (search is not False and search < len(self.selections)):
             self.last_search = ''
             self.searchtext = tk.StringVar()
@@ -98,6 +103,8 @@ class TickSelect(tk.Frame):
         self.canvas = canvas
         self.tk_variables = tk_variables
         self.single_select = single_select
+        
+        self.visible_checkbuttons = self.checkbuttons
 
 
     def _update_search(self, repeat_after=None):
@@ -108,10 +115,14 @@ class TickSelect(tk.Frame):
         key = str(self.searchtext.get())
         if key != self.last_search:
             
+            self.visible_checkbuttons  = []
+
             for checkbutton in self.checkbuttons:
                 checkbutton.grid_remove()
                 if key in checkbutton.cget('text'):
                     checkbutton.grid()
+
+                    self.visible_checkbuttons.append(checkbutton)
 
             self.last_search = key
 
@@ -122,6 +133,16 @@ class TickSelect(tk.Frame):
     def _update(self):
         self.canvas.config(scrollregion=(0, 0, self.frame.winfo_reqwidth(), self.frame.winfo_reqheight()))
         self.winfo_toplevel().after(1000, self._update)
+
+
+    def select_all(self):
+        for checkbutton in self.visible_checkbuttons:
+            checkbutton.select()
+
+
+    def toggle_selection(self):
+        for checkbutton in self.visible_checkbuttons:
+            checkbutton.toggle()
 
 
     def on_ok(self):
