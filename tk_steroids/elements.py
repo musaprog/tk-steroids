@@ -261,10 +261,20 @@ class ButtonsFrame(tk.Frame):
     '''
     If you just need a frame with simply buttons (with a callback) next to each other,
     use this widget.
+    
+    Attributes
+    ----------
+    buttons : list of objects
+        Tkinter button objects
     '''
 
-    def __init__(self, parent, button_names, button_commands, title=''):
+    def __init__(self, parent, button_names, button_commands,
+            title='', horizontal=True):
         '''
+        Arguments
+        ---------
+        horizontal : bool
+            If True, grid buttons horizontally. If False, grid vertically.
         '''
         tk.Frame.__init__(self, parent)
         self.parent = parent
@@ -279,7 +289,12 @@ class ButtonsFrame(tk.Frame):
 
         for i_button, (name, command) in enumerate(zip(button_names, button_commands)):
             button = tk.Button(target, text=name, command=command)
-            button.grid(row=0, column=i_button)
+            
+            if horizontal:
+                button.grid(row=0, column=i_button)
+            else:
+                button.grid(row=i_button, column=0)
+
             self.buttons.append(button)
 
 
