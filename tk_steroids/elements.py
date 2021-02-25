@@ -229,7 +229,10 @@ class Tabs(tk.Frame):
         
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
-
+    
+    @property
+    def tabs(self):
+        return self.pages
 
     def set_page(self, i_page):
         '''
