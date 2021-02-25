@@ -10,22 +10,51 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.widgets import RectangleSelector
 import matplotlib.ticker
+from mpl_toolkits.mplot3d import proj3d
 
 class CanvasPlotter(tk.Frame):
     '''
-    Embedding a matplotlib figure on a tkinter GUI.
+    Embeds a matplotlib figure on a tkinter GUI.
+
+    Attributes
+    ----------
+    self.figure : object
+        Matplotlib Figure object
+    self.ax : object
+        Matplotlib Axes object
+    self.parent : object
+        Tkinter parent widget
+    self.visibility_button : object
+        A tkinter.Buttton to toggle show/hide
     '''
     
-    def __init__(self, parent, text='', show=True, visibility_button=False):
+    def __init__(self, parent, text='', show=True, visibility_button=False,
+            figsize=None,
+            **kwargs):
         '''
-        tk_canvas_master        Tkinter widget to be the master of the created canvas
+        Creates a matplotlib figure and an axes objects when created, and then a
+        FigureCanvasTkAgg
 
+        ARGUMENTS
+        ---------
+        parent : object
+            Tkinter parent widget
+        text : string
+            Title of the plot, to be shown in a Label Frame wrapping the plot
+        show : bool
+            
+        projection : string
+            See projection keyword argument for matplotlib's Figure.add_subplot
         '''
+
         tk.Frame.__init__(self, parent)
         self.parent = parent
-
-        self.figure = Figure()
-        self.ax = self.figure.add_subplot(111)
+        
+        if figsize:
+            self.figure = Figure(figsize=figsize)
+        else:
+            self.figure = Figure()
+        self.ax = self.figure.add_subplot(111, **kwargs)
         
         self.frame = tk.LabelFrame(self, text=text)
         self.frame.grid(sticky='NSWE')
@@ -48,6 +77,8 @@ class CanvasPlotter(tk.Frame):
         self.show()
 
         self.roi_callback = None
+        self._previous_shape = None
+
 
     def get_figax(self):
         '''
@@ -56,9 +87,17 @@ class CanvasPlotter(tk.Frame):
         '''
         return self.figure, self.ax
 
+
     def plot(self, *args, ax_clear=True, **kwargs):
         '''
         For very simple plotting.
+
+        Arguments
+        ---------
+        *args, **kwargs
+            Directly passed to matplotlib plot method
+        ax_clear : bool
+            If True, clear the previous plottings away
         '''
         if ax_clear:
             self.ax.clear()
@@ -105,6 +144,23 @@ class CanvasPlotter(tk.Frame):
                 for slider in self.imshow_sliders:
                     slider.on_changed(lambda slider_val: self.imshow(None, slider=slider, **kwargs))
             
+            for ax in self.slider_axes:
+                if ax.get_visible() == False:
+                    ax.set_visible(True)
+           
+           
+            # Normalize using the known clipping values
+            #image = image - lower_clip
+            #image = image / upper_clip
+        else:
+            # Hide the sliders if they exist
+            if getattr(self, 'imshow_sliders', None):
+                for ax in self.slider_axes:
+                    if ax.get_visible() == True:
+                        ax.set_visible(False)
+                        print('axes not visible not')
+
+        if getattr(self, 'imshow_sliders', None):
             # Check that the lower slider cannot go above the upper.
             if self.imshow_sliders[0].val < self.imshow_sliders[1].val:
                 self.imshow_sliders[0].val = self.imshow_sliders[1].val
@@ -112,21 +168,17 @@ class CanvasPlotter(tk.Frame):
             upper_clip = np.percentile(image, self.imshow_sliders[0].val)
             lower_clip = np.percentile(image, self.imshow_sliders[1].val)
             image = np.clip(image, lower_clip, upper_clip)
-            
-            # Normalize using the known clipping values
-            #image = image - lower_clip
-            #image = image / upper_clip
-        #else:
-        # No slider, just normalize from 0 to 1
+ 
+
         if normalize:
             image = image - np.min(image)
             image = image / np.max(image)
 
 
         # Just set the data or make an imshow plot
-        try:
+        if self._previous_shape == image.shape:
             self.imshow_obj.set_data(image)
-        except AttributeError:
+        else:
             self.imshow_obj = self.ax.imshow(image, **kwargs)
             self.figure.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
             self.ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator()) 
@@ -137,7 +189,8 @@ class CanvasPlotter(tk.Frame):
                     self.roi_rectangle = RectangleSelector(self.ax, self.__onSelectRectangle, useblit=True)
                 
                 self.roi_callback = roi_callback
-             
+        
+        self._previous_shape = image.shape
         self.canvas.draw()
         
         return self.imshow_obj
