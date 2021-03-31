@@ -213,6 +213,7 @@ class CanvasPlotter(tk.Frame):
 
         self.roi_callback = None
         self._previous_shape = None
+        self._previous_roi_drawtype = None
 
 
     def get_figax(self):
@@ -245,7 +246,9 @@ class CanvasPlotter(tk.Frame):
         x2, y2 = erelease.xdata, erelease.ydata
         self.roi_callback(x1, y1, x2, y2)
        
-    def imshow(self, image, slider=False, roi_callback=None, normalize=True, **kwargs):
+    def imshow(self, image, slider=False, normalize=True,
+            roi_callback=None, roi_drawtype='box',
+            **kwargs):
         '''
         Showing an image on the canvas, and optional sliders for colour adjustments.
         
@@ -311,20 +314,33 @@ class CanvasPlotter(tk.Frame):
 
 
         # Just set the data or make an imshow plot
-        if self._previous_shape == image.shape:
+        if self._previous_shape == image.shape and roi_drawtype == self._previous_roi_drawtype:
             self.imshow_obj.set_data(image)
         else:
+
             self.imshow_obj = self.ax.imshow(image, **kwargs)
             self.figure.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
             self.ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator()) 
             self.ax.yaxis.set_major_locator(matplotlib.ticker.NullLocator())
             if callable(roi_callback):
 
-                if self.roi_callback is None:
-                    self.roi_rectangle = RectangleSelector(self.ax, self.__onSelectRectangle, useblit=True)
+                if getattr(self, "roi_rectangle", None):
+                    if self._previous_roi_drawtype == 'box':
+                        self.roi_rectangle.disconnect_events()
+                    else:
+                        self.roi_rectangle.disconnect()
+
+                if roi_drawtype == 'box':
+                    self.roi_rectangle = RectangleSelector(self.ax, self.__onSelectRectangle,
+                        useblit=True)
+                elif roi_drawtype == 'line':
+                    self.roi_rectangle = ArrowSelector(self.ax, self.__onSelectRectangle)
+                else:
+                    raise ValueError('roi_drawtype either "box" or "line", got {}'.format(roi_drawtype))
                 
                 self.roi_callback = roi_callback
-        
+                self._previous_roi_drawtype = roi_drawtype
+
         self._previous_shape = image.shape
         self.canvas.draw()
         
