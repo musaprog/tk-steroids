@@ -314,10 +314,12 @@ class CanvasPlotter(tk.Frame):
 
 
         # Just set the data or make an imshow plot
-        if self._previous_shape == image.shape and roi_drawtype == self._previous_roi_drawtype:
+        if self._previous_shape == image.shape and (
+                roi_callback is None or roi_drawtype == self._previous_roi_drawtype):
             self.imshow_obj.set_data(image)
         else:
-
+            # FIXME Creating new ax.imshow objects here still may slow
+            # down plotting eventually.
             self.imshow_obj = self.ax.imshow(image, **kwargs)
             self.figure.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
             self.ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator()) 
