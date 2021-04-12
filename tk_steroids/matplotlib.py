@@ -10,7 +10,8 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.widgets import (
         RectangleSelector,
-        PolygonSelector
+        PolygonSelector,
+        EllipseSelector
         )
 import matplotlib.ticker
 from mpl_toolkits.mplot3d import proj3d
@@ -269,7 +270,7 @@ class CanvasPlotter(tk.Frame):
         INPUT ARGUMENTS
         slider          Whether to draw the sliders for setting image cap values
         roi_callback    A callable taking in x1,y1,x2,y2
-        roi_drawtype    "box", "line" or "polygon"
+        roi_drawtype    "box", "ellipse" "line" or "polygon"
         *kwargs     go to imshow
 
         Returns the object returned by matplotlib's axes.imshow.
@@ -347,13 +348,16 @@ class CanvasPlotter(tk.Frame):
                 if roi_drawtype == 'box':
                     self.roi_rectangle = RectangleSelector(self.ax, self.__onSelectRectangle,
                         useblit=True)
+                elif roi_drawtype == 'ellipse':
+                    self.roi_rectangle = EllipseSelector(self.ax, self.__onSelectRectangle,
+                            useblit=True)
                 elif roi_drawtype == 'line':
                     self.roi_rectangle = ArrowSelector(self.ax, self.__onSelectRectangle)
                 elif roi_drawtype == 'polygon':
                     self.roi_rectangle = PolygonSelector(self.ax, self.__onSelectPolygon,
                             useblit=True)
                 else:
-                    raise ValueError('roi_drawtype either "box", "line", or "polygon", got {}'.format(roi_drawtype))
+                    raise ValueError('roi_drawtype either "box", "ellipse", "line", or "polygon", got {}'.format(roi_drawtype))
                 
                 self.roi_callback = roi_callback
                 self._previous_roi_drawtype = roi_drawtype
