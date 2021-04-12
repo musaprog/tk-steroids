@@ -8,7 +8,10 @@ import tkinter as tk
 import matplotlib.widgets
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.widgets import RectangleSelector
+from matplotlib.widgets import (
+        RectangleSelector,
+        PolygonSelector
+        )
 import matplotlib.ticker
 from mpl_toolkits.mplot3d import proj3d
 
@@ -147,6 +150,7 @@ class ArrowSelector:
 
 
 
+
 class CanvasPlotter(tk.Frame):
     '''
     Embeds a matplotlib figure on a tkinter GUI.
@@ -240,12 +244,19 @@ class CanvasPlotter(tk.Frame):
         self.ax.plot(*args, **kwargs)
         
         self.canvas.draw()
- 
+
+
     def __onSelectRectangle(self, eclick, erelease):
         x1, y1 = eclick.xdata, eclick.ydata
         x2, y2 = erelease.xdata, erelease.ydata
         self.roi_callback(x1, y1, x2, y2)
        
+    def __onSelectPolygon(self, vertices):
+        self.roi_callback(vertices)
+        # FIXME
+        # requires manual ESC press to start the selection process again
+
+    
     def imshow(self, image, slider=False, normalize=True,
             roi_callback=None, roi_drawtype='box',
             **kwargs):
@@ -258,6 +269,7 @@ class CanvasPlotter(tk.Frame):
         INPUT ARGUMENTS
         slider          Whether to draw the sliders for setting image cap values
         roi_callback    A callable taking in x1,y1,x2,y2
+        roi_drawtype    "box", "line" or "polygon"
         *kwargs     go to imshow
 
         Returns the object returned by matplotlib's axes.imshow.
@@ -327,18 +339,21 @@ class CanvasPlotter(tk.Frame):
             if callable(roi_callback):
 
                 if getattr(self, "roi_rectangle", None):
-                    if self._previous_roi_drawtype == 'box':
-                        self.roi_rectangle.disconnect_events()
-                    else:
+                    if self._previous_roi_drawtype == 'line':
                         self.roi_rectangle.disconnect()
+                    else:
+                        self.roi_rectangle.disconnect_events()
 
                 if roi_drawtype == 'box':
                     self.roi_rectangle = RectangleSelector(self.ax, self.__onSelectRectangle,
                         useblit=True)
                 elif roi_drawtype == 'line':
                     self.roi_rectangle = ArrowSelector(self.ax, self.__onSelectRectangle)
+                elif roi_drawtype == 'polygon':
+                    self.roi_rectangle = PolygonSelector(self.ax, self.__onSelectPolygon,
+                            useblit=True)
                 else:
-                    raise ValueError('roi_drawtype either "box" or "line", got {}'.format(roi_drawtype))
+                    raise ValueError('roi_drawtype either "box", "line", or "polygon", got {}'.format(roi_drawtype))
                 
                 self.roi_callback = roi_callback
                 self._previous_roi_drawtype = roi_drawtype
