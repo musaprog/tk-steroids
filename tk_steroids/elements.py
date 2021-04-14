@@ -104,6 +104,8 @@ class TickboxFrame(tk.Frame):
     ----------
     states : dict
         True/False
+    ticked : list
+        self.states keys that have True value
     checkbuttons : list
         tk.Checkbutton objects
     '''
@@ -181,6 +183,11 @@ class TickboxFrame(tk.Frame):
             return {option: int(self.__states[option].get()) == i for i, option in enumerate(self._option_names)}
         else:
             return {option: bool(intvar.get()) for option, intvar in self.__states.items()}
+
+    @property
+    def ticked(self):
+        return [s for s, b in self.states.items() if b]
+
 
 
 
