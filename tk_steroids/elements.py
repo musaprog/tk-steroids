@@ -256,7 +256,8 @@ class Tabs(tk.Frame):
         A list of Tkinter widgets the tab holds.
     
     '''
-    def __init__(self, parent, tab_names, elements=None,
+    def __init__(self, parent, tab_names,
+            elements=None, draw_frame=False,
             on_select_callback=None):
         '''
         Initializing the tabs.
@@ -273,14 +274,21 @@ class Tabs(tk.Frame):
 
             Can also classes, that get initialized as this Tabs class
             as the sole argument.
-
+        draw_frame : bool
+            If True, draw an extra frame to confine the tabs
         on_select_callback : callable
             Callback that is executed just before changing the tab.
             Has to take in one argument that is new i_current (integer).
         
         '''
+        
+        # Call init from LabelFrame if framing is wanted
+        # Not sure if this can cause problems (when inheriting from tk.Frame)
+        if draw_frame:
+            tk.LabelFrame.__init__(self, parent)
+        else:
+            tk.Frame.__init__(self, parent)
 
-        tk.Frame.__init__(self, parent)
         self.parent = parent
 
         self.on_select_callback = on_select_callback
