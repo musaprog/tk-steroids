@@ -343,6 +343,10 @@ class Tabs(tk.Frame):
         # Grid the new widget
         self.pages[self.i_current].grid(row=1, columnspan=len(self.buttons), sticky='NSEW')
 
+        # Change button reliefs (pressed)
+        self.buttons[i_old].config(relief=tk.RAISED)
+        self.buttons[i_page].config(relief=tk.SUNKEN)
+
 
     def get_elements(self):
         '''
