@@ -189,6 +189,57 @@ class TickboxFrame(tk.Frame):
         return [s for s, b in self.states.items() if b]
 
 
+class DropdownList(tk.Frame):
+    '''
+    A drop-in replacement for TickboxFrame using tkinter's OptionMenu
+    (looks just like OptionMenu)
+
+    Attributes
+    ----------
+    option_menu : object
+        Underlying tkinter OptionMenu object
+    label : object
+        Underlying tkinter Label object (if label was specified at init)
+    '''
+
+    def __init__(self, parent, options, fancynames=None, label=None,
+            default=None, callback=None, **kwargs):
+        
+        tk.Frame.__init__(self, parent)
+        
+        self.__options = options
+        
+   
+        # Check fancynames to show
+        if fancynames is None:
+            fancynames = options
+        else:
+            if len(fancynames) != len(options):
+                raise ValueError('options and fancynames different lengths, {} vs {}'.format(
+                    len(fancynames), len(options)))
+        
+        self._state = tk.StringVar(self)
+        self._state.set(fancynames[0])
+ 
+        self.option_menu = tk.OptionMenu(self, self._state, *fancynames)
+        self.option_menu.grid(row=1, column=2, sticky='NSWE')
+
+        if label:
+            self.label = tk.Label(self, text=label)
+            self.label.grid(row=1, column=1, sticky='NSWE')
+    
+    @property
+    def states(self):
+        current = self._state.get()
+        return {option: current == option for option in self.__options}
+
+    @property
+    def ticked(self):
+        '''
+        Returns a list of one item, the current selection.
+        '''
+        return [self._state.get()]
+
 
 
 class Tabs(tk.Frame):
