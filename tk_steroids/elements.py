@@ -109,6 +109,7 @@ class TickboxFrame(tk.Frame):
     '''
 
     def __init__(self, parent, options, fancynames=None, defaults=None, ncols=3,
+            single_select=False,
             callback=None):
         '''
         parent
@@ -121,6 +122,9 @@ class TickboxFrame(tk.Frame):
             Start values, True for ticked and False for unticked
         ncols : int
             Number of columns
+        single_select : bool
+            If True, use Radiobuttons instead of Checkbuttons to only have
+            one active selection at a time.
         callback : callable
             Executed when there's a change in the tickboxes.
             Gets the self.states dict as an input argument.
@@ -128,21 +132,39 @@ class TickboxFrame(tk.Frame):
          
         tk.Frame.__init__(self, parent)
         self.parent = parent
+        self._single_select = single_select 
+
+        if single_select:
+            intvar = tk.IntVar()
+            self.__states = {option: intvar for option in options}
+            self._option_names = options
+            try:
+                intvar.set(defaults.index(True))
+            except:
+                intvar.set(0)
+
+        else:
+            self.__states = {option: tk.IntVar() for option in options}
         
-        self.__states = {option: tk.IntVar() for option in options}
-        
-        if defaults is not None:
-            for option, default in zip(options, defaults):
-                self.__states[option].set( int(default) ) 
+            if defaults is not None:
+                for option, default in zip(options, defaults):
+                    self.__states[option].set( int(default) ) 
             
+
         if fancynames is None:
             fancynames = {option: option for option in options}
         else:
             fancynames = {option: fancyname for option, fancyname in zip(options, fancynames)}
-
-        self.checkbuttons = [tk.Checkbutton(self, text=fancynames[option], variable=self.__states[option], command=callback) for
-                option in options]
         
+        if single_select:
+            self.checkbuttons = [tk.Radiobutton(self, text=fancynames[option],
+                variable=self.__states[option], command=callback,
+                value=i_option) for i_option, option in enumerate(options)]
+        else:
+            self.checkbuttons = [tk.Checkbutton(self, text=fancynames[option],
+                variable=self.__states[option], command=callback) for option in options]
+
+
         i_row = 1
         i_col = 1
         for button in self.checkbuttons:
@@ -155,7 +177,11 @@ class TickboxFrame(tk.Frame):
     
     @property
     def states(self):
-        return {option: bool(intvar.get()) for option, intvar in self.__states.items()}
+        if self._single_select:
+            return {option: int(self.__states[option].get()) == i for i, option in enumerate(self._option_names)}
+        else:
+            return {option: bool(intvar.get()) for option, intvar in self.__states.items()}
+
 
 
 class Tabs(tk.Frame):
