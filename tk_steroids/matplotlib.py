@@ -413,3 +413,71 @@ class CanvasPlotter(tk.Frame):
         else:
             self.show()
 
+
+class SequenceImshow(tk.Frame):
+    '''
+    Higher level CanvasPlotter.imshow for many images with a slider
+    to select the current image to show.
+    
+    Attributes
+    ----------
+    parent : object
+        Tkinter parent widget
+    images : list of objects
+        List of matplotlib imshow plottable objects.
+    canvas_plotter : object
+        CavasPlotter object
+    slider : object
+        Tkitner Scale (slider) for selecting the currently shown image.
+    '''
+
+    def __init__(self, parent, *args, **kwargs):
+        
+        tk.Frame.__init__(self, parent)
+        
+        self.images = []
+        self.canvas_plotter = CanvasPlotter(self, *args, **kwargs)
+        self.canvas_plotter.grid(row=1, column=1, sticky='NSWE')
+        
+        self.slider = tk.Scale(self, from_=1, to=1, orient=tk.HORIZONTAL,
+                command=self.select_image)
+        self.slider.grid(row=2, column=1, sticky='NSWE')
+            
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+        self._imshow_kwargs = {}
+
+
+    def select_image(self, i_image=None):
+        '''
+        Callback for self.slider.
+        '''
+        if i_image is None:
+            i_image = self.slider.get()
+
+        self.canvas_plotter.imshow(self.images[int(i_image)-1],
+                **self._imshow_kwargs)
+        self.slider.set(i_image)
+
+
+    def imshow(self, images, **kwargs):
+        '''
+        Set a new set of images to be shown and
+        update the slider range.
+        
+        Arguments
+        ---------
+        kwargs : dict
+            Keyword arguments for CanvasPlotter imshow or
+            matplotlib's imshow.
+        '''
+        self.images = images
+        self.slider.config(to=len(images))
+        
+        if kwargs:
+            self._imshow_kwargs = kwargs
+
+        self.select_image(1) 
+
+
