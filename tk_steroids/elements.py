@@ -218,9 +218,16 @@ class DropdownList(tk.Frame):
                 raise ValueError('options and fancynames different lengths, {} vs {}'.format(
                     len(fancynames), len(options)))
         
+        self._fancynames = fancynames
+
         self._state = tk.StringVar(self)
         self._state.set(fancynames[0])
- 
+        if callback is not None:
+            if callable(callback):
+                self._state.trace('w', lambda *args: callback())
+            else:
+                raise ValueError('callback has to be callable or none, now {}'.format(callback))
+
         self.option_menu = tk.OptionMenu(self, self._state, *fancynames)
         self.option_menu.grid(row=1, column=2, sticky='NSWE')
 
@@ -230,7 +237,8 @@ class DropdownList(tk.Frame):
     
     @property
     def states(self):
-        current = self._state.get()
+        index = self._fancynames.index(self._state.get())
+        current = self.__options[index]
         return {option: current == option for option in self.__options}
 
     @property
@@ -238,7 +246,8 @@ class DropdownList(tk.Frame):
         '''
         Returns a list of one item, the current selection.
         '''
-        return [self._state.get()]
+        index = self._fancynames.index(self._state.get())
+        return [self.__options[index]]
 
 
 
