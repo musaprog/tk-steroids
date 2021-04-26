@@ -331,8 +331,13 @@ class CanvasPlotter(tk.Frame):
                 roi_callback is None or roi_drawtype == self._previous_roi_drawtype):
             self.imshow_obj.set_data(image)
         else:
-            # FIXME Creating new ax.imshow objects here still may slow
-            # down plotting eventually.
+            if hasattr(self, 'imshow_obj'):
+                # Fixed here. Without removing the AxesImages object plotting
+                # goes increacingly slow every time when visiting this else block
+                # Not sure if this is the best fix (does it free all memory) but
+                # it seems to work well
+                self.imshow_obj.remove()
+
             self.imshow_obj = self.ax.imshow(image, **kwargs)
             self.figure.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
             self.ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator()) 
