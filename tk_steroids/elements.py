@@ -104,11 +104,14 @@ class TickboxFrame(tk.Frame):
     ----------
     states : dict
         True/False
+    ticked : list
+        self.states keys that have True value
     checkbuttons : list
         tk.Checkbutton objects
     '''
 
     def __init__(self, parent, options, fancynames=None, defaults=None, ncols=3,
+            single_select=False,
             callback=None):
         '''
         parent
@@ -121,6 +124,9 @@ class TickboxFrame(tk.Frame):
             Start values, True for ticked and False for unticked
         ncols : int
             Number of columns
+        single_select : bool
+            If True, use Radiobuttons instead of Checkbuttons to only have
+            one active selection at a time.
         callback : callable
             Executed when there's a change in the tickboxes.
             Gets the self.states dict as an input argument.
@@ -128,21 +134,39 @@ class TickboxFrame(tk.Frame):
          
         tk.Frame.__init__(self, parent)
         self.parent = parent
+        self._single_select = single_select 
+
+        if single_select:
+            intvar = tk.IntVar()
+            self.__states = {option: intvar for option in options}
+            self._option_names = options
+            try:
+                intvar.set(defaults.index(True))
+            except:
+                intvar.set(0)
+
+        else:
+            self.__states = {option: tk.IntVar() for option in options}
         
-        self.__states = {option: tk.IntVar() for option in options}
-        
-        if defaults is not None:
-            for option, default in zip(options, defaults):
-                self.__states[option].set( int(default) ) 
+            if defaults is not None:
+                for option, default in zip(options, defaults):
+                    self.__states[option].set( int(default) ) 
             
+
         if fancynames is None:
             fancynames = {option: option for option in options}
         else:
             fancynames = {option: fancyname for option, fancyname in zip(options, fancynames)}
-
-        self.checkbuttons = [tk.Checkbutton(self, text=fancynames[option], variable=self.__states[option], command=callback) for
-                option in options]
         
+        if single_select:
+            self.checkbuttons = [tk.Radiobutton(self, text=fancynames[option],
+                variable=self.__states[option], command=callback,
+                value=i_option) for i_option, option in enumerate(options)]
+        else:
+            self.checkbuttons = [tk.Checkbutton(self, text=fancynames[option],
+                variable=self.__states[option], command=callback) for option in options]
+
+
         i_row = 1
         i_col = 1
         for button in self.checkbuttons:
@@ -155,7 +179,76 @@ class TickboxFrame(tk.Frame):
     
     @property
     def states(self):
-        return {option: bool(intvar.get()) for option, intvar in self.__states.items()}
+        if self._single_select:
+            return {option: int(self.__states[option].get()) == i for i, option in enumerate(self._option_names)}
+        else:
+            return {option: bool(intvar.get()) for option, intvar in self.__states.items()}
+
+    @property
+    def ticked(self):
+        return [s for s, b in self.states.items() if b]
+
+
+class DropdownList(tk.Frame):
+    '''
+    A drop-in replacement for TickboxFrame using tkinter's OptionMenu
+    (looks just like OptionMenu)
+
+    Attributes
+    ----------
+    option_menu : object
+        Underlying tkinter OptionMenu object
+    label : object
+        Underlying tkinter Label object (if label was specified at init)
+    '''
+
+    def __init__(self, parent, options, fancynames=None, label=None,
+            default=None, callback=None, **kwargs):
+        
+        tk.Frame.__init__(self, parent)
+        
+        self.__options = options
+        
+   
+        # Check fancynames to show
+        if fancynames is None:
+            fancynames = options
+        else:
+            if len(fancynames) != len(options):
+                raise ValueError('options and fancynames different lengths, {} vs {}'.format(
+                    len(fancynames), len(options)))
+        
+        self._fancynames = fancynames
+
+        self._state = tk.StringVar(self)
+        self._state.set(fancynames[0])
+        if callback is not None:
+            if callable(callback):
+                self._state.trace('w', lambda *args: callback())
+            else:
+                raise ValueError('callback has to be callable or none, now {}'.format(callback))
+
+        self.option_menu = tk.OptionMenu(self, self._state, *fancynames)
+        self.option_menu.grid(row=1, column=2, sticky='NSWE')
+
+        if label:
+            self.label = tk.Label(self, text=label)
+            self.label.grid(row=1, column=1, sticky='NSWE')
+    
+    @property
+    def states(self):
+        index = self._fancynames.index(self._state.get())
+        current = self.__options[index]
+        return {option: current == option for option in self.__options}
+
+    @property
+    def ticked(self):
+        '''
+        Returns a list of one item, the current selection.
+        '''
+        index = self._fancynames.index(self._state.get())
+        return [self.__options[index]]
+
 
 
 class Tabs(tk.Frame):
@@ -172,7 +265,8 @@ class Tabs(tk.Frame):
         A list of Tkinter widgets the tab holds.
     
     '''
-    def __init__(self, parent, tab_names, elements=None,
+    def __init__(self, parent, tab_names,
+            elements=None, draw_frame=False,
             on_select_callback=None):
         '''
         Initializing the tabs.
@@ -189,14 +283,21 @@ class Tabs(tk.Frame):
 
             Can also classes, that get initialized as this Tabs class
             as the sole argument.
-
+        draw_frame : bool
+            If True, draw an extra frame to confine the tabs
         on_select_callback : callable
             Callback that is executed just before changing the tab.
             Has to take in one argument that is new i_current (integer).
         
         '''
+        
+        # Call init from LabelFrame if framing is wanted
+        # Not sure if this can cause problems (when inheriting from tk.Frame)
+        if draw_frame:
+            tk.LabelFrame.__init__(self, parent)
+        else:
+            tk.Frame.__init__(self, parent)
 
-        tk.Frame.__init__(self, parent)
         self.parent = parent
 
         self.on_select_callback = on_select_callback
@@ -250,6 +351,10 @@ class Tabs(tk.Frame):
 
         # Grid the new widget
         self.pages[self.i_current].grid(row=1, columnspan=len(self.buttons), sticky='NSEW')
+
+        # Change button reliefs (pressed)
+        self.buttons[i_old].config(relief=tk.RAISED)
+        self.buttons[i_page].config(relief=tk.SUNKEN)
 
 
     def get_elements(self):
