@@ -1,4 +1,6 @@
 
+import inspect
+
 import tkinter as tk
 
 
@@ -21,9 +23,14 @@ class MenuMaker:
             - Method "use_underscore_names" would become "Use underscore names"
             - Mofidy replacement_dict attribute if you want to change this
 
+    
+    Ordering menu entries
+        The default order is the order as in the class methods were defined.
+        
+        This can be changed by chaning the order attribute (see below)
 
-    To overload the alphabetical ordering, modify
-        _force_order
+        To have completly custom ordering, set order to "force_order" and
+            make _force_order method to return the menu entry names in the wanted order
 
 
     (Private) attributes
@@ -38,22 +45,27 @@ class MenuMaker:
     self.added_menu_items
         A list of menu item names added to the menu (labels, string)
         For separators, index of the separator when added
-    
+    order : string or callable
+        "alphabetical", "as_defined" or "force_order" or callable.
+        If force_order but force_order is not redefined to return anything
+        useful, uses 'as_defined'.
+        If callable, the raw menuentry names are passed to the callable
+        and sorted names are expected to be returned.
     '''
 
 
-    def __init__(self, name):
+    def __init__(self, name, order='as_defined'):
         '''
         name        Name of the menu as shown on screen.
         '''
         
         self.name = name
+        self.order = order
         self.replacement_dict = {'_': ' '}
 
         self.parent_menu = None
         self.tkmenu = None
-        self.added_menu_items = []
-        
+        self.added_menu_items = [] 
         
 
     def _connect(self, tk_parent_menu, **kwargs):
@@ -68,12 +80,11 @@ class MenuMaker:
         self.tkmenu = tk.Menu(tk_parent_menu, **kwargs)
 
         method_names = self._force_order()
-        
+                
         all_method_names = self._list_items(fancy_names=False)
         
         if method_names is None:
-            # In case self._force_order not overridden just use alphabetical
-            # listing of all method names
+            # In case self._force_order not overridden
             method_names = all_method_names
         else:
             # Make sure to add also those methods that were
@@ -148,8 +159,14 @@ class MenuMaker:
 
         method_names = [method for method in dir(self)
                 if not method.startswith('_') and callable(getattr(self, method))]
-        method_names.sort()
         
+        if self.order == 'alphabetical':
+            method_names.sort()
+        elif self.order in ['as_defined', 'force_order']:
+            method_names = self._sort_by_definition_order(method_names)
+        elif callable(self.order):
+            method_names = self.order(method_names)
+
         if fancy_names:
             method_names = [self._fancy_name(name) for name in method_names]
 
@@ -193,4 +210,33 @@ class MenuMaker:
         '''
         return None
 
+
+    def _sort_by_definition_order(self, method_names):
+        '''
+        Check the source code for definition order of the methods
+
+        Can make mistakes if for example comments contain funtion definitions,
+        but this merely leads into wrong ordering.
+
+        Returns
+        -------
+        method_names : list of strings
+            the method names in the defined order
+        '''
+        indices = {}
+        
+        names_to_look = [name for name in method_names]
+        
+        lines, linen = inspect.getsourcelines(self.__class__)
+
+        for i_line, line in enumerate(lines):
+            print(line)
+            matches = [('def '+name in line) for name in names_to_look]
+            
+            if any(matches):
+                index = matches.index(True)
+                indices[names_to_look[index]] = i_line
+                names_to_look.pop(index)
+        
+        return sorted(method_names, key=lambda x: indices.get(x, -1))
 
