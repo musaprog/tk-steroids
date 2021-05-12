@@ -60,7 +60,7 @@ def popup_tickselect(tk_parent, *args, title='Make selection', **kwargs):
     selector = TickSelect(top, *args, **kwargs)
     selector.grid(sticky='NSEW')
 
-    tk.Button(selector, text='Close', command=top.destroy).grid(row=1, column=1)
+    tk.Button(selector, text='Close', command=top.destroy).grid(row=2, column=1)
 
 
 
