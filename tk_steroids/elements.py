@@ -374,15 +374,23 @@ class ButtonsFrame(tk.Frame):
     ----------
     buttons : list of objects
         Tkinter button objects
+    label : object or None
+        If label given at init, store the tk.Label object in this attibute
     '''
 
     def __init__(self, parent, button_names, button_commands,
-            title='', horizontal=True):
+            title='', label='', horizontal=True):
         '''
         Arguments
         ---------
         horizontal : bool
             If True, grid buttons horizontally. If False, grid vertically.
+        title : string
+            If set, init using LabelFrame that encloses the buttons and
+            use this text (title) as the label.
+        label : string
+            Alternative or complementary to the title option, just adds a tk.Label
+            as the first button (if avoiding the LabelFrame box is desired).
         '''
         tk.Frame.__init__(self, parent)
         self.parent = parent
@@ -393,15 +401,24 @@ class ButtonsFrame(tk.Frame):
         else:
             target = self
 
+        if label:
+            self.label = tk.Label(self, text=label)
+            if horizontal:
+                self.label.grid(row=1, column=0)
+            else:
+                self.label.grid(row=0, column=1)
+        else:
+            self.label = None
+
         self.buttons = []
 
         for i_button, (name, command) in enumerate(zip(button_names, button_commands)):
             button = tk.Button(target, text=name, command=command)
             
             if horizontal:
-                button.grid(row=0, column=i_button)
+                button.grid(row=1, column=i_button+1)
             else:
-                button.grid(row=i_button, column=0)
+                button.grid(row=i_button+1, column=1)
 
             self.buttons.append(button)
 
