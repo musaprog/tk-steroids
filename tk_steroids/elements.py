@@ -57,7 +57,7 @@ class Listbox(tk.Frame):
         except:
             argument = None
 
-        if not argument is None:
+        if not argument is None and callable(callback):
             callback(self.selections[sel])
 
     def set_selections(self, selections, colors=None):
