@@ -1,7 +1,7 @@
 import tkinter as tk
 
 
-def popup(tk_parent, widget_class, args=[], title=None,
+def popup(tk_parent, widget_class, args=[], kwargs={}, title=None,
         grid_pos=(1,1), sticky='NSWE', grid_weights=(1,1),
         close_button=True):
     '''
@@ -18,6 +18,8 @@ def popup(tk_parent, widget_class, args=[], title=None,
     args: list
         Additional arguments passed to the widget, corresponding to
         widget(toplevel, args[0], args[1], ...)
+    kwargs : dict
+        Additional keyword arguments to the widget.
     title : string
         Optional title to the widow
     grid_pos : tuple
@@ -43,7 +45,7 @@ def popup(tk_parent, widget_class, args=[], title=None,
     toplevel.grid_rowconfigure(grid_pos[0], weight=grid_weights[0])
     toplevel.grid_columnconfigure(grid_pos[1], weight=grid_weights[1])
     
-    widget = widget_class(toplevel, *args)
+    widget = widget_class(toplevel, *args, **kwargs)
     widget.grid(row=grid_pos[0], column=grid_pos[1], sticky=sticky)
     
     tk.Button(toplevel, text='Close', command=toplevel.destroy).grid(row=2, column=1)
