@@ -8,9 +8,14 @@ class Listbox(tk.Frame):
     At initialization, a list of selectable options are passed together with a callback
     function, which on selection is called using the current selection as the input
     argument.
+    
+    Attributes
+    ----------
+    selections
+    current
     '''
 
-    def __init__(self, parent, selections, callback):
+    def __init__(self, parent, selections, callback, maintain_selected=True):
         '''
         SELECTIONS
         A list of strings that make up the listbox. The selection is passed
@@ -22,11 +27,16 @@ class Listbox(tk.Frame):
         is the selection (as shown) or None if no selection or error happens.
 
         The current selection is passed as the one and only argument to the callback function.
+        
+        maintain_selected : bool
+            If true, clicking other Listboxes or widgets does not make the current
+            selection to None (deselecting the selected)
         '''
         
         tk.Frame.__init__(self, parent)
         self.parent = parent
         
+        self.maintain_selected = maintain_selected
 
         self.listbox = tk.Listbox(self, height=20)
         self.listbox.grid(sticky='NSEW')
@@ -44,7 +54,8 @@ class Listbox(tk.Frame):
         # Make the listbox to stretch in North-South to take all the available space
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-
+        
+        self._previous_selection = None
 
 
     def _errorchecked(self, callback):
@@ -54,6 +65,7 @@ class Listbox(tk.Frame):
         try:
             sel = self.listbox.curselection()[0]
             argument = self.selections[sel]
+            self._previous_selection = argument
         except:
             argument = None
 
@@ -92,8 +104,11 @@ class Listbox(tk.Frame):
             sel = self.listbox.curselection()[0]
             return self.selections[sel]
         except:
-            return None
+            return self._previous_selection
 
+    @property
+    def current(self):
+        return self.get_current()
 
 
 class TickboxFrame(tk.Frame):
