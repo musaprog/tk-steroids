@@ -230,7 +230,6 @@ class MenuMaker:
         lines, linen = inspect.getsourcelines(self.__class__)
 
         for i_line, line in enumerate(lines):
-            print(line)
             matches = [('def '+name in line) for name in names_to_look]
             
             if any(matches):
