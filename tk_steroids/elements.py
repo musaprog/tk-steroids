@@ -204,6 +204,94 @@ class TickboxFrame(tk.Frame):
         return [s for s, b in self.states.items() if b]
 
 
+
+class SliderFrame(tk.Frame):
+    '''
+    Multiple sliders (similar to TickboxFrame)
+    
+    Attributes
+    ----------
+    options : list
+        Names of the variables that the sliders control
+    labels : list
+        Tkinter Label widgets
+    sliders : list
+        Tkinter Scale widgets
+    '''
+    def __init__(self, parent, options, fancynames=None, defaults=None, ncols=1,
+            ranges=None, default_range=(0,1),
+            resolutions=None, default_resolution=0.01):
+        '''
+        Options
+        -------
+        parent : object
+            Tkinter parent widget
+        options : list of strings
+            Names of the variables that the sliders control
+        fancynames : list of strings, or None
+            Optional, "fancy" names that are shown to the user
+        defaults : list or None
+            Slider default values
+        ncols : int
+            Reserved, not yet implemented.
+        ranges : list of tuples
+            Slider specific ranges (min, max) or None for each slider.
+        default_range : tuple of numerical values
+            Default (min, max) range
+        resolutions : list of numerical values
+            Slider specific resolutions or None for each slider.
+        default_resolution : numerical
+            Default slider resolution
+        '''
+        tk.Frame.__init__(self, parent)
+        self.grid_columnconfigure(1, weight=1)
+ 
+        self.options = options
+        self.labels = []
+        self.sliders = []
+
+        for i_row, name in enumerate(options):
+            
+            if fancynames and fancynames[i_row]:
+                fancyname = fancynames[i_row]
+            else:
+                fancyname = name
+
+            label = tk.Label(self, text=fancyname)
+            label.grid(row=i_row, column=0)
+
+            if ranges and ranges[i_row]:
+                A, B = ranges[i_row]
+            else:
+                A, B = default_range
+
+            if resolutions and resolutions[i_row]:
+                resolution = resolutions[i_row]
+            else:
+                resolution = default_resolution
+
+            slider = tk.Scale(self, from_=A, to=B, orient=tk.HORIZONTAL,
+                    resolution=resolution)
+            slider.grid(row=i_row, column=1, sticky='WE')
+
+            if defaults and defaults[i_row]:
+                slider.set(defaults[i_row])
+
+            self.labels.append(label)
+            self.sliders.append(slider)
+
+
+    @property
+    def states(self):
+        '''
+        Returns the slider values dictionary.
+        Keys are slider names (options) and items are slider values.
+        '''
+        return {option: slider.get() for option, slider in zip(self.options, self.sliders)}
+
+
+
+
 class DropdownList(tk.Frame):
     '''
     A drop-in replacement for TickboxFrame using tkinter's OptionMenu
