@@ -5,7 +5,10 @@ Widgets to let the user manage a program's settings.
 import tkinter as tk
 
 
-from .routines import inspect_booleans
+from .routines import (
+        inspect_booleans,
+        inspect_types
+        )
 from .elements import (
         TickboxFrame,
         SliderFrame,
@@ -118,6 +121,26 @@ class SettingsManager(tk.Frame):
         self._add_setting(group, sliders)
 
         return sliders
+
+    
+    def add_sliders_inspect(self, group, function_or_method,
+            exclude_keywords=[], **kwargs):
+        '''Add sliders by inspecting the given function_or_method
+        
+        Options
+        -------
+        group : string
+            Group name
+        function_or_method : callable
+        exclude_keywords : dict
+        **kwargs
+            Keyword arguments to SliderFrame
+
+        See add_sliders for documentation.
+        '''
+        options, defaults = inspect_types((int, float), function_or_method,
+                exclude_keywords, exclude_types=bool)
+        return self.add_sliders(group, options, defaults=defaults, **kwargs)
 
 
     def get_current(self):
