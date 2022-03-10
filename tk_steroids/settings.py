@@ -95,7 +95,7 @@ class SettingsManager(tk.Frame):
             The tk_steroids' TickboxFrame object
         '''
         options, defaults = inspect_booleans(function_or_method, exclude_keywords)
-        return self.add_tickboxes(group, options, defaults=defaults)        
+        return self.add_tickboxes(group, options, defaults=defaults, **kwargs)
 
     
     def add_sliders(self, group, options, **kwargs):
