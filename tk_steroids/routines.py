@@ -2,6 +2,49 @@
 import inspect
 
 
+def inspect_types(types, function_or_method, exclude_keywords=[],
+        exclude_types=()):
+    '''Retrieve keyword arguments of the given types
+
+    Inspect and get the default keyword arguments of the given types
+    from a live function to be used in TickboxFrame.
+    
+    Arguments
+    --------- 
+    types : class or tuple
+        The keyword arguments of having default of these types
+        to be returned
+    function_or_method : callable
+        An callable on which we apply inspect.signature
+    exclude_keywords : list of strings
+        Keyword arguments to be excluded by their name.
+    exclude_types : tuple of types
+        Types to exclude
+
+    Returns
+    --------
+    options, defaults : list
+        Keyword argument names (string) and their default values (bool).
+        See TickboxFrame for documentation.
+
+    '''
+    options = []
+    defaults = []
+
+    for name, param in inspect.signature(function_or_method).parameters.items():
+        if param.kind.name in ['POSITIONAL_OR_KEYWORD', 'KEYWORD_ONLY']:
+            if isinstance(param.default, types) and name not in exclude_keywords:
+                
+                if exclude_types and isinstance(param.default, exclude_types):
+                    continue
+                
+                options.append(name)
+                defaults.append(param.default)
+
+    return options, defaults
+
+
+
 def inspect_booleans(function_or_method, exclude_keywords=[]):
     '''
     Inspect and get boolean default keyword arguments from a live function
@@ -20,17 +63,8 @@ def inspect_booleans(function_or_method, exclude_keywords=[]):
         Keyword argument names (string) and their default values (bool).
         See TickboxFrame for documentation.
     '''
-    options = []
-    defaults = []
+    return inspect_types(bool, function_or_method, exclude_keywords)
 
-    for name, param in inspect.signature(function_or_method).parameters.items():
-        if param.kind.name in ['POSITIONAL_OR_KEYWORD', 'KEYWORD_ONLY']:
-            if isinstance(param.default, bool) and name not in exclude_keywords:
-                options.append(name)
-                defaults.append(param.default)
-
-
-    return options, defaults
 
 
 def extend_keywords(keyword_source):
