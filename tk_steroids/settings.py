@@ -162,3 +162,18 @@ class SettingsManager(tk.Frame):
         return settings
 
 
+    def set_current(self, settings):
+        '''Set current settings
+        
+        Options
+        -------
+        settings : dict
+            {group: {option: value, ...}}
+        '''
+        for group in self.elements:
+            for element in self.elements[group]:
+                element.states = settings[group]
+
+
+
+
