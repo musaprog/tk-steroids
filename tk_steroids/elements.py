@@ -199,6 +199,14 @@ class TickboxFrame(tk.Frame):
         else:
             return {option: bool(intvar.get()) for option, intvar in self.__states.items()}
 
+    @states.setter
+    def states(self, s):
+        
+        for option in self.__states.keys():
+            value = s.get(option, None)
+            if value is not None:
+                self.__states[option].set(value)
+
     @property
     def ticked(self):
         return [s for s, b in self.states.items() if b]
@@ -288,6 +296,14 @@ class SliderFrame(tk.Frame):
         Keys are slider names (options) and items are slider values.
         '''
         return {option: slider.get() for option, slider in zip(self.options, self.sliders)}
+
+    
+    @states.setter
+    def states(self, s):
+        for slider, option in zip(self.sliders, self.options):
+            value = s.get(option, None)
+            if value is not None:
+                slider.set(value)
 
 
 
