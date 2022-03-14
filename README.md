@@ -1,8 +1,7 @@
 # Tk-steroids
 
-Tk-steroids contains some useful GUI elements (tkinter/tk widgets)
-such as a selection boxes or matplotlib integration
-that keep reoccuring in my code elsewhere.
+Tk-steroids contains custom, commonly reoccuring GUI elements (tkinter widgets).
+
 
 ## Installing
 
@@ -19,6 +18,7 @@ from tk_steroids.MODULE import WIDGET
 * elements
 	* Listbox
 	* TickboxFrame
+	* SliderFrame
 	* DropdownList
 	* Tabs
 	* ButtonsFrame
@@ -29,11 +29,17 @@ from tk_steroids.MODULE import WIDGET
 	* TickSelect
 * menumaker
 	* MenuMaker
+* settings
+	* SettingsManager
 
-Most of the widgets inherit from `tk.Frame` and
+
+Most widgets inherit from `tk.Frame` and
 use *grid* positioning system internally.
-There are exceptions to this logic such as `MenuMaker` that creates
-a menu from a class that is inheriting it (when calling *_connect*).
+There are exceptions such as `MenuMaker` that turns an inheriting
+class into a menu.
+
+- [Documentation](https://github.com/jkemppainen/tk_steroids/)
+
 
 ### Example 1
 
@@ -53,6 +59,7 @@ boxes.grid()
 
 root.mainloop()
 ```
+
 
 ### Example 2
 
@@ -83,10 +90,4 @@ root.mainloop()
 ```
 
 For convinience, `CanvasPlotter` has also
-its own *plot* and *imshow* methods.
-
-
-## Other
-
-In these 0.x.y versions, things can change quite a lot
-(no guaranteed API stability).
+its own *plot* and *imshow* wrapper methods for quick plotting.
