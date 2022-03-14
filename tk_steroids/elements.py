@@ -2,32 +2,29 @@ import tkinter as tk
 import tkinter.scrolledtext
 
 class Listbox(tk.Frame):
-    '''
-    Essentially tkinter's Listbox rewrapped.
+    '''Tkinter's Listbox and Scrollbar wrapped for convienece.
     
-    At initialization, a list of selectable options are passed together with a callback
-    function, which on selection is called using the current selection as the input
-    argument.
+    At the init, it takes in a list of selectable options, and a callback function.
+    When the user selects and item, it evokes the callback that receives
+    the user selection (one of the selectable options) as the input
+    (or None if no selection).
     
     Attributes
     ----------
-    selections
-    current
+    selections : list of strings
+        Items that show up in the listbox
+    callback : callable
+        The callback function
+    parent : object
+        Parent widget
+    listbox : object
+        Tkinter's Listbox widget
+    scrollbar : object
+        Tkinter's Scrollbar widget
     '''
 
     def __init__(self, parent, selections, callback, maintain_selected=True):
         '''
-        SELECTIONS
-        A list of strings that make up the listbox. The selection is passed
-        to the callback function.
-        
-        CALLBACK
-        Set the callback function that is called when any change or selection
-        in the listbox happens. The only argument that the callback function gets
-        is the selection (as shown) or None if no selection or error happens.
-
-        The current selection is passed as the one and only argument to the callback function.
-        
         maintain_selected : bool
             If true, clicking other Listboxes or widgets does not make the current
             selection to None (deselecting the selected)
@@ -35,6 +32,7 @@ class Listbox(tk.Frame):
         
         tk.Frame.__init__(self, parent)
         self.parent = parent
+
         
         self.maintain_selected = maintain_selected
 
@@ -47,9 +45,10 @@ class Listbox(tk.Frame):
         self.listbox.config(yscrollcommand=self.scrollbar.set)
 
 
-        self.set_selections(selections)
+        self.set_selections(selections) # self.selections = selections
+        self.callback = callback
         
-        self.listbox.bind('<<ListboxSelect>>', lambda x: self._errorchecked(callback))
+        self.listbox.bind('<<ListboxSelect>>', self._call_callback)
         
         # Make the listbox to stretch in North-South to take all the available space
         self.rowconfigure(0, weight=1)
@@ -58,9 +57,9 @@ class Listbox(tk.Frame):
         self._previous_selection = None
 
 
-    def _errorchecked(self, callback):
-        '''
-        Does some error checking related to the selection(?)        
+
+    def _call_callback(self):
+        '''Validate selection and the callback and call back
         '''
         try:
             sel = self.listbox.curselection()[0]
@@ -69,14 +68,21 @@ class Listbox(tk.Frame):
         except:
             argument = None
 
-        if not argument is None and callable(callback):
-            callback(self.selections[sel])
+        if not argument is None and callable(self.callback):
+            self.callback(self.selections[sel])
+
+
 
     def set_selections(self, selections, colors=None):
-        '''
-        Allows resetting the selections.
+        '''Reset the selectables
 
-        colors          A list of valid tkinter colors, one for each selection
+        Options
+        -------
+        selections : list of strings
+            
+        colors : list
+            A list of valid tkinter colors. It sets
+            the background color for each selectable in the Listbox.
         '''
         
         # Empty current as it may have old entries
@@ -92,14 +98,20 @@ class Listbox(tk.Frame):
 
 
     def disable(self):
+        '''Makes the listbox's state unselectable
+        '''
         self.listbox.configure(state=tk.DISABLED)
 
 
     def enable(self):
+        '''Makes the listbox's state selectable
+        '''
         self.listbox.configure(state=tk.NORMAL)
 
     
     def get_current(self):
+        '''Returns the current selection
+        '''
         try:
             sel = self.listbox.curselection()[0]
             return self.selections[sel]
@@ -108,6 +120,10 @@ class Listbox(tk.Frame):
 
     @property
     def current(self):
+        '''
+        current : string
+            The current selection
+        '''
         return self.get_current()
 
 
