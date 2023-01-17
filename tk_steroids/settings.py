@@ -12,6 +12,7 @@ from .routines import (
 from .elements import (
         TickboxFrame,
         SliderFrame,
+        Tabs,
         )
 
 
@@ -43,6 +44,8 @@ class SettingsManager(tk.Frame):
 
         self.elements = {}
 
+        self._container = self
+
 
     def _add_setting(self, group, element):
         if group not in self.elements:
@@ -65,7 +68,7 @@ class SettingsManager(tk.Frame):
         -------
         tickboxes : object
         '''
-        tickboxes = TickboxFrame(self, options, **kwargs)
+        tickboxes = TickboxFrame(self._container, options, **kwargs)
         tickboxes.grid(sticky='NSWE')
 
         self._add_setting(group, tickboxes)
@@ -115,7 +118,7 @@ class SettingsManager(tk.Frame):
         sliders : object
             The tk_steroids' SliderFrame object
         '''
-        sliders = SliderFrame(self, options, **kwargs)
+        sliders = SliderFrame(self._container, options, **kwargs)
         sliders.grid(sticky='NSWE')
 
         self._add_setting(group, sliders)
@@ -175,5 +178,37 @@ class SettingsManager(tk.Frame):
                 element.states = settings[group]
 
 
+
+class PagedSettingsManager(SettingsManager):
+    '''Diplay user a settings widget with multiple pages (tabs)
+    
+    Attributes
+    ----------
+    tabs : object
+        tk_steroids' Tabs object
+    '''
+
+    def __init__(self, parent, page_names):
+        super().__init__(parent)
+        
+        self.tabs = Tabs(self, page_names)
+        self.tabs.grid(sticky='NSWE')
+        
+        self._container = self.tabs.pages[0]
+
+    
+    @property
+    def active_page(self):
+        '''Determines the active tab page, in which new widgets are placed.
+
+        Note. Do not confuse with tab selection
+        '''
+        return self.tabs.buttons[ self.tabs.i_current ].cget('text')
+
+    @active_page.setter
+    def active_page(self, page_name):
+
+        page_names = [button.cget('text') for button in self.tabs.buttons]
+        self.cotainer = self.tabs.pages[ page_names.index(page_name) ]
 
 
