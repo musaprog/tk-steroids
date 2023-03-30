@@ -58,7 +58,7 @@ class Listbox(tk.Frame):
 
 
 
-    def _call_callback(self):
+    def _call_callback(self, *args):
         '''Validate selection and the callback and call back
         '''
         try:
