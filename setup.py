@@ -20,7 +20,7 @@ setuptools.setup(
     description="A collection of custom tkinter bits",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/jkemppainen/tk_steroids",
+    url="https://github.com/musaprog/tk-steroids",
     packages=setuptools.find_packages(exclude=('test')),
     install_requires=install_requires,
     classifiers=[
