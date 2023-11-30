@@ -55,7 +55,7 @@ class Listbox(tk.Frame):
         self.columnconfigure(0, weight=1)
         
         self._previous_selection = None
-
+        self._state_valid = True
 
 
     def _call_callback(self, *args):
@@ -65,6 +65,7 @@ class Listbox(tk.Frame):
             sel = self.listbox.curselection()[0]
             argument = self.selections[sel]
             self._previous_selection = argument
+            self._state_valid = True
         except:
             argument = None
 
@@ -110,8 +111,13 @@ class Listbox(tk.Frame):
 
     
     def get_current(self):
-        '''Returns the current selection
+        '''Returns the current selection.
+
+        Returns None if no selection has been made.
         '''
+        if not self._state_valid:
+            return None
+
         try:
             sel = self.listbox.curselection()[0]
             return self.selections[sel]
@@ -125,6 +131,19 @@ class Listbox(tk.Frame):
             The current selection
         '''
         return self.get_current()
+
+    
+    @current.setter
+    def current(self, value):
+        if value is None:
+            self._state_valid = False
+            return
+
+        if value not in self.selections:
+            raise ValueError(f'"{value}" not in the selections {self.selections}')
+        index = self.selections.index(value)
+        self.listbox.select_set(index)
+
 
 
 class TickboxFrame(tk.Frame):
