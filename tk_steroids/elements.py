@@ -363,6 +363,8 @@ class DropdownList(tk.Frame):
         
         self.__options = options
         
+        self.columnconfigure(2, weight=1)
+        self.rowconfigure(1, weight=1)
    
         # Check fancynames to show
         if fancynames is None:
