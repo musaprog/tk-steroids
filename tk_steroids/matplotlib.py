@@ -7,7 +7,7 @@ import numpy as np
 import tkinter as tk
 import matplotlib.widgets
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.widgets import (
         RectangleSelector,
         PolygonSelector,
@@ -153,26 +153,29 @@ class ArrowSelector:
 
 
 class CanvasPlotter(tk.Frame):
-    '''
-    Embeds a matplotlib figure on a tkinter GUI.
+    '''Embeds a matplotlib figure on a tkinter GUI.
+
+    The CanvasPlotter is just a tkinter Frame and you can use it
+    similarly to it.
 
     Attributes
     ----------
-    self.figure : object
-        Matplotlib Figure object
-    self.ax : object
-        Matplotlib Axes object
-    self.parent : object
+    figure : object
+        Underlying Matplotlib Figure
+    ax : object
+        Underlying Matplotlib Axes
+    parent : object
         Tkinter parent widget
+    frame : LabelFrame
+    canvas : FigureCanvasTkAgg
     self.visibility_button : object
         A tkinter.Buttton to toggle show/hide
     '''
     
     def __init__(self, parent, text='', show=True, visibility_button=False,
-            figsize=None,
+            figsize=None, toolbar=False,
             **kwargs):
-        '''
-        Creates a matplotlib figure and an axes objects when created, and then a
+        '''Creates a matplotlib figure and an axes objects when created, and then a
         FigureCanvasTkAgg
 
         ARGUMENTS
@@ -181,8 +184,7 @@ class CanvasPlotter(tk.Frame):
             Tkinter parent widget
         text : string
             Title of the plot, to be shown in a Label Frame wrapping the plot
-        show : bool
-            
+        show : bool            
         projection : string
             See projection keyword argument for matplotlib's Figure.add_subplot
         '''
@@ -204,8 +206,6 @@ class CanvasPlotter(tk.Frame):
         self.frame.grid_rowconfigure(1, weight=1)
         self.frame.grid_columnconfigure(0, weight=1)
 
-
-
         self.visibility_button = tk.Button(self.frame, text='', command=self.toggle_visibility)
         
         if visibility_button:
@@ -215,10 +215,30 @@ class CanvasPlotter(tk.Frame):
         #self.canvas.get_tk_widget().grid(sticky='NEWS') 
         self.canvas.draw()
         self.show()
+        
+        if toolbar:
+            self._toolbar = NavigationToolbar2Tk(self.canvas, self.frame, pack_toolbar=False)
+            self._toolbar.grid()
+            self._toolbar_visible = True
+        else:
+            self._toolbar = None
+            self._toolbar_visible = False
 
         self.roi_callback = None
         self._previous_shape = None
         self._previous_roi_drawtype = None
+
+    
+    def set_toolbar_visibility(self, visible):
+        if visible and not self._toolbar_visible:
+            if self._toolbar is None:
+                self._toolbar = NavigationToolbar2Tk(self.canvas, self.frame, pack_toolbar=False)
+            self._toolbar.grid()
+            self._toolbar_visible = True
+        
+        elif not visible and self._toolbar_visible:
+            self._toolbar.grid_forget()
+            self._toolbar_visible = False
 
 
     def get_figax(self):
