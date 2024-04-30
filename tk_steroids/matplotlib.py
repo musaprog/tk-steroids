@@ -262,9 +262,10 @@ class CanvasPlotter(tk.Frame):
         '''
         if ax_clear:
             self.ax.clear()
-        self.ax.plot(*args, **kwargs)
+        lines = self.ax.plot(*args, **kwargs)
         
         self.canvas.draw()
+        return lines
 
 
     def __onSelectRectangle(self, eclick, erelease):
