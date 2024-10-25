@@ -16,7 +16,7 @@ setuptools.setup(
     name="tk-steroids",
     version=__version__,
     author="Joni Kemppainen",
-    author_email="jjtkemppainen1@sheffield.ac.uk",
+    author_email="joni.kemppainen@windowslive.com",
     description="A collection of custom tkinter bits",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -28,5 +28,5 @@ setuptools.setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3) ",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.0',
+    python_requires='>=3.6',
 )
