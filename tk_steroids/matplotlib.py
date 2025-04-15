@@ -173,7 +173,7 @@ class CanvasPlotter(tk.Frame):
     '''
     
     def __init__(self, parent, text='', show=True, visibility_button=False,
-            figsize=None, toolbar=False,
+            figsize=None, toolbar=False, clipboard_button=False,
             **kwargs):
         '''Creates a matplotlib figure and an axes objects when created, and then a
         FigureCanvasTkAgg
@@ -187,6 +187,9 @@ class CanvasPlotter(tk.Frame):
         show : bool            
         projection : string
             See projection keyword argument for matplotlib's Figure.add_subplot
+        clipboard_button : bool
+            If true, show the copy to clipboard button. Your code
+            has to use the set_copydata method to set the clipboard data.
         '''
 
         tk.Frame.__init__(self, parent)
@@ -206,7 +209,12 @@ class CanvasPlotter(tk.Frame):
         self.frame.grid_rowconfigure(1, weight=1)
         self.frame.grid_columnconfigure(0, weight=1)
 
-        self.visibility_button = tk.Button(self.frame, text='', command=self.toggle_visibility)
+        self.buttons_frame = tk.Frame(self.frame)
+        self.buttons_frame.grid(row=0, column=0, sticky='WE')
+
+        self.visibility_button = tk.Button(
+                self.buttons_frame, text='',
+                command=self.toggle_visibility)
         
         if visibility_button:
             self.visibility_button.grid(row=0, column=0, sticky='W')
@@ -228,6 +236,14 @@ class CanvasPlotter(tk.Frame):
         self._previous_shape = None
         self._previous_roi_drawtype = None
 
+        self._copy_to_clipboard_data = None
+        if clipboard_button:
+            self._copy_to_clipboard_button = tk.Button(
+                    self.buttons_frame, text="Copy data",
+                    command=self.copy_to_clipboard)
+            self._copy_to_clipboard_button.grid(row=0, column=1)
+        else:
+            self._copy_to_clipboard_button = None
     
     def set_toolbar_visibility(self, visible):
         if visible and not self._toolbar_visible:
@@ -438,6 +454,32 @@ class CanvasPlotter(tk.Frame):
             self.hide()
         else:
             self.show()
+
+
+    def set_copydata(self, data):
+        '''Copy-to-clipboard data when "Copy data" is pressed
+        '''
+        self._copy_to_clipboard_data = data
+
+    def copy_to_clipboard(self):
+        '''Copy previously set data to the clipboard
+        '''
+        data = self._copy_to_clipboard_data
+
+        root = self.winfo_toplevel()
+        root.clipboard_clear()
+
+        if data is None:
+            return
+
+        formatted = []
+        for i_row in range(len(data[0])):
+            row = [str(data[i_col][i_row]) for i_col in range(len(data))]
+            formatted += '\t'.join(row)
+            formatted += '\n'
+
+        formatted = ''.join(formatted)
+        root.clipboard_append(formatted)
 
 
 class SequenceImshow(tk.Frame):
