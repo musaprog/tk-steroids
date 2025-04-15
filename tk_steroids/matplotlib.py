@@ -506,4 +506,6 @@ class SequenceImshow(tk.Frame):
 
         self.select_image(1) 
 
+    def get_figax(self):
+        return self.canvas_plotter.get_figax()
 
